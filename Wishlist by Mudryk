@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Наш Віш-ліст 🤍</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --cream: #FAF8F5; --warm-white: #F5F0EA; --soft-brown: #C9B99A;
+    --dark: #2C2825; --muted: #8A7F75;
+    --her: #D4A5A5; --his: #A5B4C9; --shared: #A5C4A5; --accent: #C9956A;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--dark); min-height: 100vh; }
+
+  .header { text-align: center; padding: 48px 24px 32px; }
+  .header::after { content: ''; display: block; width: 60px; height: 1px; background: var(--soft-brown); margin: 20px auto 0; }
+  .header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 6vw, 3.2rem); font-weight: 300; letter-spacing: 0.05em; }
+  .header h1 span { font-style: italic; color: var(--accent); }
+  .header p { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 8px; }
+
+  .sync-status { text-align: center; font-size: 0.75rem; color: var(--muted); padding: 4px 0 8px; }
+  .sync-status.ok { color: #6BA06B; }
+  .sync-status.err { color: #C07070; }
+
+  .tabs { display: flex; justify-content: center; padding: 8px 16px 0; max-width: 600px; margin: 0 auto; }
+  .tab-btn { flex: 1; padding: 12px 8px; border: 1px solid #E0D8CF; background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); transition: all 0.25s; }
+  .tab-btn:first-child { border-radius: 8px 0 0 8px; }
+  .tab-btn:last-child { border-radius: 0 8px 8px 0; }
+  .tab-btn:not(:first-child) { border-left: none; }
+  .tab-btn.her.active { background: var(--her); border-color: var(--her); color: white; }
+  .tab-btn.his.active { background: var(--his); border-color: var(--his); color: white; }
+  .tab-btn.shared.active { background: var(--shared); border-color: var(--shared); color: white; }
+
+  .main { max-width: 600px; margin: 0 auto; padding: 24px 16px 100px; }
+
+  .section-label { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot.her { background: var(--her); } .dot.his { background: var(--his); } .dot.shared { background: var(--shared); }
+  .section-label h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 400; font-style: italic; }
+  .count { margin-left: auto; font-size: 0.75rem; color: var(--muted); background: var(--warm-white); padding: 2px 10px; border-radius: 20px; border: 1px solid #E0D8CF; }
+
+  .wish-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 10px; border: 1px solid #EDE7DE; transition: all 0.2s; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .wish-card:hover { border-color: var(--soft-brown); box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+  .wish-card.done { opacity: 0.5; }
+  .wish-card.done .wish-name { text-decoration: line-through; color: var(--muted); }
+
+  .wish-top { display: flex; align-items: flex-start; gap: 12px; }
+  .wish-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #D0C8BF; background: transparent; cursor: pointer; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .wish-check.her.checked { background: var(--her); border-color: var(--her); }
+  .wish-check.his.checked { background: var(--his); border-color: var(--his); }
+  .wish-check.shared.checked { background: var(--shared); border-color: var(--shared); }
+  .wish-check.checked::after { content: '✓'; font-size: 11px; color: white; font-weight: 600; }
+
+  .wish-info { flex: 1; min-width: 0; }
+  .wish-name { font-size: 0.95rem; font-weight: 500; line-height: 1.4; word-break: break-word; }
+  .wish-budget { display: inline-block; margin-top: 4px; font-size: 0.8rem; font-weight: 500; color: var(--accent); background: #FDF5EE; padding: 1px 8px; border-radius: 20px; }
+  .wish-comment { font-size: 0.78rem; color: var(--muted); margin-top: 6px; font-style: italic; }
+  .wish-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 0.75rem; color: var(--his); text-decoration: none; word-break: break-all; }
+  .wish-link:hover { text-decoration: underline; }
+
+  .wish-actions { display: flex; gap: 6px; margin-left: auto; flex-shrink: 0; }
+  .btn-icon { width: 28px; height: 28px; border: none; background: var(--warm-white); border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; color: var(--muted); }
+  .btn-icon:hover { background: #EDE7DE; }
+  .btn-icon.delete:hover { background: #FDEAEA; color: #C07070; }
+
+  .add-section { margin-top: 24px; background: white; border-radius: 16px; padding: 20px; border: 1.5px dashed #D0C8BF; }
+  .add-section h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 400; font-style: italic; margin-bottom: 14px; color: var(--muted); }
+  .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .form-input { flex: 1; padding: 10px 12px; border: 1px solid #E0D8CF; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--dark); background: var(--cream); outline: none; transition: border-color 0.2s; width: 100%; }
+  .form-input:focus { border-color: var(--soft-brown); background: white; }
+  .form-input::placeholder { color: #B5ADA5; }
+
+  .btn-add { padding: 10px 20px; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; width: 100%; }
+  .btn-add.her { background: var(--her); color: white; }
+  .btn-add.his { background: var(--his); color: white; }
+  .btn-add.shared { background: var(--shared); color: white; }
+  .btn-add:hover { filter: brightness(0.92); }
+  .btn-add:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .empty { text-align: center; padding: 32px 16px; color: var(--muted); }
+  .empty .emoji { font-size: 2rem; margin-bottom: 8px; }
+  .empty p { font-size: 0.85rem; font-style: italic; }
+  .loading { text-align: center; padding: 32px; color: var(--muted); font-size: 0.85rem; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(44,40,37,0.4); z-index: 100; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 20px 20px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 600px; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; font-style: italic; margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .btn-cancel { flex: 1; padding: 12px; border: 1px solid #E0D8CF; border-radius: 8px; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
+  .btn-save { flex: 2; padding: 12px; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; color: white; cursor: pointer; background: var(--accent); }
+
+  .total-bar { background: white; border-top: 1px solid #EDE7DE; padding: 12px 20px; position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; gap: 24px; font-size: 0.75rem; color: var(--muted); z-index: 10; }
+  .total-item { display: flex; align-items: center; gap: 6px; }
+  .total-item strong { color: var(--dark); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Наш <span>Віш-ліст</span></h1>
+  <p>Бажання · Мрії · Подарунки</p>
+</div>
+<div class="sync-status" id="syncStatus">⏳ Підключення...</div>
+
+<div class="tabs">
+  <button class="tab-btn her active" onclick="switchTab('her')">💗 Її</button>
+  <button class="tab-btn his" onclick="switchTab('his')">💙 Його</button>
+  <button class="tab-btn shared" onclick="switchTab('shared')">🤍 Наші</button>
+</div>
+
+<div class="main">
+  <div id="tab-her">
+    <div class="section-label"><div class="dot her"></div><h2>Її бажання</h2><span class="count" id="count-her">0</span></div>
+    <div id="list-her"><div class="loading">Завантаження...</div></div>
+    <div class="add-section">
+      <h3>+ Додати бажання</h3>
+      <div class="form-row"><input class="form-input" id="her-name" placeholder="Назва товару або мрії..." /></div>
+      <div class="form-row">
+        <input class="form-input" id="her-budget" placeholder="Бюджет (грн)" type="number" style="flex:1" />
+        <input class="form-input" id="her-link" placeholder="Посилання" style="flex:2" />
+      </div>
+      <div class="form-row"><input class="form-input" id="her-comment" placeholder="Коментар (необов'язково)" /></div>
+      <div class="form-row"><button class="btn-add her" id="btn-her" onclick="addItem('her')">Додати до її списку</button></div>
+    </div>
+  </div>
+
+  <div id="tab-his" style="display:none">
+    <div class="section-label"><div class="dot his"></div><h2>Його бажання</h2><span class="count" id="count-his">0</span></div>
+    <div id="list-his"><div class="loading">Завантаження...</div></div>
+    <div class="add-section">
+      <h3>+ Додати бажання</h3>
+      <div class="form-row"><input class="form-input" id="his-name" placeholder="Назва товару або мрії..." /></div>
+      <div class="form-row">
+        <input class="form-input" id="his-budget" placeholder="Бюджет (грн)" type="number" style="flex:1" />
+        <input class="form-input" id="his-link" placeholder="Посилання" style="flex:2" />
+      </div>
+      <div class="form-row"><input class="form-input" id="his-comment" placeholder="Коментар (необов'язково)" /></div>
+      <div class="form-row"><button class="btn-add his" id="btn-his" onclick="addItem('his')">Додати до його списку</button></div>
+    </div>
+  </div>
+
+  <div id="tab-shared" style="display:none">
+    <div class="section-label"><div class="dot shared"></div><h2>Наші спільні</h2><span class="count" id="count-shared">0</span></div>
+    <div id="list-shared"><div class="loading">Завантаження...</div></div>
+    <div class="add-section">
+      <h3>+ Додати спільне бажання</h3>
+      <div class="form-row"><input class="form-input" id="shared-name" placeholder="Назва товару або мрії..." /></div>
+      <div class="form-row">
+        <input class="form-input" id="shared-budget" placeholder="Бюджет (грн)" type="number" style="flex:1" />
+        <input class="form-input" id="shared-link" placeholder="Посилання" style="flex:2" />
+      </div>
+      <div class="form-row"><input class="form-input" id="shared-comment" placeholder="Коментар (необов'язково)" /></div>
+      <div class="form-row"><button class="btn-add shared" id="btn-shared" onclick="addItem('shared')">Додати до спільного списку</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="total-bar">
+  <div class="total-item">💗 <strong id="total-her">0 ₴</strong></div>
+  <div class="total-item">💙 <strong id="total-his">0 ₴</strong></div>
+  <div class="total-item">🤍 <strong id="total-shared">0 ₴</strong></div>
+</div>
+
+<div class="modal-overlay" id="editModal" onclick="closeModal(event)">
+  <div class="modal">
+    <h3>Редагувати бажання</h3>
+    <input type="hidden" id="edit-id" />
+    <div class="form-row"><input class="form-input" id="edit-name" placeholder="Назва" /></div>
+    <div class="form-row">
+      <input class="form-input" id="edit-budget" placeholder="Бюджет (грн)" type="number" style="flex:1" />
+      <input class="form-input" id="edit-link" placeholder="Посилання" style="flex:2" />
+    </div>
+    <div class="form-row"><input class="form-input" id="edit-comment" placeholder="Коментар" /></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModalDirect()">Скасувати</button>
+      <button class="btn-save" onclick="saveEdit()">Зберегти</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const db = createClient(
+    'https://wfejkwjujpxflxvcrrsz.supabase.co',
+    'sb_publishable_bvqcMBDSSXeLHCep4JNvNQ_la-JZcgu'
+  );
+
+  let data = { her: [], his: [], shared: [] };
+
+  function setStatus(msg, cls) {
+    const el = document.getElementById('syncStatus');
+    el.textContent = msg;
+    el.className = 'sync-status ' + (cls || '');
+  }
+
+  async function loadAll() {
+    try {
+      const { data: rows, error } = await db.from('wishes').select('*').order('created_at');
+      if (error) throw error;
+      data = { her: [], his: [], shared: [] };
+      (rows || []).forEach(r => { if (data[r.section]) data[r.section].push(r); });
+      ['her','his','shared'].forEach(render);
+      setStatus('🟢 Синхронізовано', 'ok');
+    } catch(e) {
+      setStatus('🔴 Помилка: ' + e.message, 'err');
+    }
+  }
+
+  db.channel('wishes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes' }, loadAll)
+    .subscribe();
+
+  async function addItem(s) {
+    const name = document.getElementById(s+'-name').value.trim();
+    if (!name) { document.getElementById(s+'-name').focus(); return; }
+    const budget = document.getElementById(s+'-budget').value;
+    const link = document.getElementById(s+'-link').value.trim();
+    const comment = document.getElementById(s+'-comment').value.trim();
+    const btn = document.getElementById('btn-'+s);
+    btn.disabled = true;
+    setStatus('⏳ Зберігаємо...', '');
+    const { error } = await db.from('wishes').insert({
+      section: s, name,
+      budget: budget ? parseInt(budget) : null,
+      link: link || null,
+      comment: comment || null,
+      done: false
+    });
+    btn.disabled = false;
+    if (error) { setStatus('🔴 ' + error.message, 'err'); return; }
+    ['name','budget','link','comment'].forEach(f => document.getElementById(s+'-'+f).value = '');
+    document.getElementById(s+'-name').focus();
+    await loadAll();
+  }
+
+  async function toggleDone(id, current) {
+    await db.from('wishes').update({ done: !current }).eq('id', id);
+    await loadAll();
+  }
+
+  async function deleteItem(id) {
+    if (!confirm('Видалити це бажання?')) return;
+    await db.from('wishes').delete().eq('id', id);
+    await loadAll();
+  }
+
+  function openEdit(id) {
+    const item = [...data.her, ...data.his, ...data.shared].find(i => i.id === id);
+    if (!item) return;
+    document.getElementById('edit-id').value = id;
+    document.getElementById('edit-name').value = item.name;
+    document.getElementById('edit-budget').value = item.budget || '';
+    document.getElementById('edit-link').value = item.link || '';
+    document.getElementById('edit-comment').value = item.comment || '';
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  async function saveEdit() {
+    const id = parseInt(document.getElementById('edit-id').value);
+    const name = document.getElementById('edit-name').value.trim();
+    if (!name) return;
+    const budget = document.getElementById('edit-budget').value;
+    await db.from('wishes').update({
+      name,
+      budget: budget ? parseInt(budget) : null,
+      link: document.getElementById('edit-link').value.trim() || null,
+      comment: document.getElementById('edit-comment').value.trim() || null,
+    }).eq('id', id);
+    closeModalDirect();
+    await loadAll();
+  }
+
+  function closeModal(e) { if (e.target.id === 'editModal') closeModalDirect(); }
+  function closeModalDirect() { document.getElementById('editModal').classList.remove('open'); }
+
+  function switchTab(tab) {
+    ['her','his','shared'].forEach((t, i) => {
+      document.getElementById('tab-'+t).style.display = t === tab ? 'block' : 'none';
+      document.querySelectorAll('.tab-btn')[i].classList.toggle('active', t === tab);
+    });
+  }
+
+  function fmt(n) { return n ? new Intl.NumberFormat('uk-UA').format(n) + ' ₴' : null; }
+  function esc(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+
+  function render(s) {
+    const list = data[s];
+    document.getElementById('count-'+s).textContent = list.length;
+    const totalAmt = list.filter(i => !i.done && i.budget).reduce((a, i) => a + i.budget, 0);
+    document.getElementById('total-'+s).textContent = totalAmt > 0 ? fmt(totalAmt) : '0 ₴';
+
+    const el = document.getElementById('list-'+s);
+    if (!list.length) {
+      const e = {her:'💗',his:'💙',shared:'🤍'};
+      const m = {her:'Поки порожньо. Додай перше бажання!',his:'Поки порожньо. Додай перше бажання!',shared:'Додайте спільну мрію разом!'};
+      el.innerHTML = `<div class="empty"><div class="emoji">${e[s]}</div><p>${m[s]}</p></div>`;
+      return;
+    }
+    el.innerHTML = list.map(item => `
+      <div class="wish-card${item.done?' done':''}">
+        <div class="wish-top">
+          <button class="wish-check ${s}${item.done?' checked':''}" onclick="toggleDone(${item.id},${item.done})"></button>
+          <div class="wish-info">
+            <div class="wish-name">${esc(item.name)}</div>
+            ${item.budget ? `<span class="wish-budget">${fmt(item.budget)}</span>` : ''}
+            ${item.comment ? `<div class="wish-comment">${esc(item.comment)}</div>` : ''}
+            ${item.link ? `<a class="wish-link" href="${esc(item.link)}" target="_blank">🔗 Переглянути</a>` : ''}
+          </div>
+          <div class="wish-actions">
+            <button class="btn-icon" onclick="openEdit(${item.id})">✏️</button>
+            <button class="btn-icon delete" onclick="deleteItem(${item.id})">🗑️</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const id = document.activeElement?.id;
+    if (!id) return;
+    const s = id.split('-')[0];
+    if (['her','his','shared'].includes(s)) addItem(s);
+  });
+
+  loadAll();
+</script>
+</body>
+</html>
