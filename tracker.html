@@ -4,282 +4,321 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Трекер Юри</title>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;700&family=Onest:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Onest:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#0A0A0F;--surface:#13131A;--surface2:#1C1C26;--border:#2A2A38;--text:#F0EFE8;--muted:#6B6A7A;--accent:#C8F542;--accent2:#42F5C8;--red:#F55442;}
+:root{--bg:#0A0A0F;--s1:#13131A;--s2:#1C1C26;--bd:#2A2A38;--tx:#F0EFE8;--mu:#6B6A7A;--ac:#C8F542;--a2:#42F5C8;--rd:#F55442;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{max-width:100%;overflow-x:hidden;}
-body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:100px;}
-#confettiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;}
-.streak-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:var(--surface);border:2px solid var(--accent);border-radius:24px;padding:28px 32px;text-align:center;z-index:1000;pointer-events:none;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s;opacity:0;white-space:nowrap;}
-.streak-popup.show{transform:translate(-50%,-50%) scale(1);opacity:1;}
-.streak-popup .fire{font-size:2.5rem;display:block;margin-bottom:6px;}
-.streak-popup .days{font-family:'Unbounded',sans-serif;font-size:2rem;font-weight:700;color:var(--accent);line-height:1;}
-.streak-popup .label{font-size:0.75rem;color:var(--muted);margin-top:4px;letter-spacing:0.08em;text-transform:uppercase;font-family:'Unbounded',sans-serif;}
-.header{padding:52px 16px 14px;}
-.header-tag{font-family:'Unbounded',sans-serif;font-size:0.55rem;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:4px;}
-.header-row{display:flex;align-items:center;justify-content:space-between;}
-.header h1{font-family:'Unbounded',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:-0.02em;}
-.header h1 span{color:var(--accent);}
-.month-label{font-family:'Unbounded',sans-serif;font-size:0.58rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;}
-.sync-bar{text-align:center;font-size:0.65rem;padding:4px 16px 8px;color:var(--muted);}
-.sync-bar.ok{color:var(--accent);}
-.sync-bar.err{color:var(--red);}
-.tabs{display:flex;gap:4px;padding:0 16px 16px;}
-.tab{flex:1;padding:9px 4px;border:1px solid var(--border);background:transparent;border-radius:10px;font-family:'Unbounded',sans-serif;font-size:0.5rem;letter-spacing:0.03em;color:var(--muted);cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
-.tab.active{background:var(--accent);border-color:var(--accent);color:var(--bg);}
+html,body{width:100%;max-width:100%;overflow-x:hidden;}
+body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;padding-bottom:80px;}
+
+/* CONFETTI */
+#cc{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;}
+.spop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:var(--s1);border:2px solid var(--ac);border-radius:20px;padding:24px 28px;text-align:center;z-index:1000;pointer-events:none;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s;opacity:0;white-space:nowrap;}
+.spop.on{transform:translate(-50%,-50%) scale(1);opacity:1;}
+.spop .sf{font-size:2rem;display:block;margin-bottom:4px;}
+.spop .sd{font-family:'Unbounded',sans-serif;font-size:1.8rem;font-weight:700;color:var(--ac);}
+.spop .sl{font-size:0.65rem;color:var(--mu);margin-top:3px;letter-spacing:0.1em;text-transform:uppercase;}
+
+/* HEADER */
+.hdr{padding:48px 16px 12px;}
+.htag{font-family:'Unbounded',sans-serif;font-size:0.5rem;letter-spacing:0.2em;color:var(--ac);text-transform:uppercase;margin-bottom:4px;}
+.hrow{display:flex;align-items:center;justify-content:space-between;}
+.hrow h1{font-family:'Unbounded',sans-serif;font-size:1.4rem;font-weight:700;letter-spacing:-0.02em;}
+.hrow h1 span{color:var(--ac);}
+.mlbl{font-family:'Unbounded',sans-serif;font-size:0.55rem;color:var(--mu);letter-spacing:0.06em;text-transform:uppercase;}
+.sync{text-align:center;font-size:0.6rem;padding:3px 16px 8px;color:var(--mu);}
+.sync.ok{color:var(--ac);}.sync.er{color:var(--rd);}
+
+/* TABS */
+.tabs{display:flex;gap:3px;padding:0 16px 14px;}
+.tab{flex:1;padding:8px 2px;border:1px solid var(--bd);background:transparent;border-radius:9px;font-family:'Unbounded',sans-serif;font-size:0.48rem;color:var(--mu);cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.02em;}
+.tab.on{background:var(--ac);border-color:var(--ac);color:var(--bg);}
+
 .main{padding:0 16px;}
-.habit-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;border-left:3px solid var(--hc,var(--accent));animation:fadeUp 0.3s ease;width:100%;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.habit-top{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
-.habit-icon{width:32px;height:32px;border-radius:8px;background:color-mix(in srgb,var(--hc,var(--accent)) 20%,transparent);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.habit-info{flex:1;min-width:0;}
-.habit-name{font-family:'Unbounded',sans-serif;font-size:0.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.streak-badge{font-size:0.62rem;color:var(--muted);margin-top:2px;}
-.streak-badge b{color:var(--accent);}
-.check-today{width:36px;height:36px;border-radius:50%;border:2px solid var(--hc,var(--accent));background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all 0.2s;font-size:16px;color:var(--bg);}
-.check-today.done{background:var(--hc,var(--accent));}
-.check-today:active{transform:scale(0.85);}
-.month-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
-.month-nav-label{font-size:0.6rem;color:var(--muted);font-family:'Unbounded',sans-serif;letter-spacing:0.08em;text-transform:uppercase;}
-.month-nav-btn{width:22px;height:22px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;border-radius:5px;display:flex;align-items:center;justify-content:center;}
-.month-nav-btn:disabled{opacity:0.2;pointer-events:none;}
-.dow-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:3px;}
-.dow-cell{text-align:center;font-size:6.5px;color:var(--muted);padding:1px 0;}
-.days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
-.day-cell{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8.5px;color:var(--muted);cursor:pointer;transition:all 0.12s;user-select:none;}
-.day-cell.empty{cursor:default;}
-.day-cell.future{opacity:0.25;cursor:default;pointer-events:none;}
-.day-cell.done{background:var(--hc,var(--accent));color:var(--bg);font-weight:700;}
-.day-cell.today-cell{outline:1.5px solid var(--hc,var(--accent));outline-offset:1px;color:var(--text);}
-.day-cell.today-cell.done{outline:none;}
-.habit-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);}
-.habit-stats-sm{font-size:0.65rem;color:var(--muted);}
-.habit-stats-sm b{color:var(--text);}
-.btn-del-habit{padding:5px 10px;border:1px solid rgba(245,84,66,0.35);background:rgba(245,84,66,0.08);border-radius:7px;color:var(--red);cursor:pointer;font-size:0.65rem;font-family:'Onest',sans-serif;}
-.add-habit-btn{width:100%;padding:14px;border:1.5px dashed var(--border);background:transparent;border-radius:14px;font-family:'Onest',sans-serif;font-size:0.85rem;color:var(--muted);cursor:pointer;margin-bottom:20px;}
-.weight-input-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px 16px;margin-bottom:14px;}
-.weight-input-label{font-family:'Unbounded',sans-serif;font-size:0.6rem;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
-.today-weight-display{font-family:'Unbounded',sans-serif;font-size:2.6rem;font-weight:700;color:var(--accent2);line-height:1;margin-bottom:3px;}
-.today-weight-display span{font-size:1rem;color:var(--muted);font-weight:300;}
-.weight-sub{font-size:0.7rem;color:var(--muted);margin-bottom:16px;}
-.weight-enter-row{display:flex;gap:8px;}
-.weight-big-input{flex:1;padding:14px;background:var(--surface2);border:2px solid var(--border);border-radius:12px;font-family:'Unbounded',sans-serif;font-size:1.3rem;color:var(--text);text-align:center;outline:none;}
-.weight-big-input:focus{border-color:var(--accent2);}
-.weight-big-input::placeholder{color:var(--muted);font-size:0.85rem;}
-.btn-save-weight{flex:1;padding:14px;background:var(--accent2);border:none;border-radius:12px;font-family:'Unbounded',sans-serif;font-size:0.65rem;font-weight:700;color:var(--bg);cursor:pointer;}
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:14px;}
-.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.chart-title{font-family:'Unbounded',sans-serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;}
-.period-btns{display:flex;gap:3px;}
-.period-btn{padding:4px 9px;border:1px solid var(--border);background:transparent;border-radius:5px;font-family:'Unbounded',sans-serif;font-size:0.5rem;color:var(--muted);cursor:pointer;}
-.period-btn.active{border-color:var(--accent2);color:var(--accent2);background:var(--surface2);}
+
+/* HABIT CARD */
+.hc{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px;border-left:3px solid var(--hcol,var(--ac));animation:fu 0.3s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+.htop{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.hico{width:30px;height:30px;border-radius:7px;background:color-mix(in srgb,var(--hcol,var(--ac)) 18%,transparent);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.hinf{flex:1;min-width:0;}
+.hnam{font-family:'Unbounded',sans-serif;font-size:0.68rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hstr{font-size:0.58rem;color:var(--mu);margin-top:1px;}
+.hstr b{color:var(--ac);}
+.chkbtn{width:32px;height:32px;border-radius:50%;border:2px solid var(--hcol,var(--ac));background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all 0.15s;font-size:14px;color:var(--bg);}
+.chkbtn.on{background:var(--hcol,var(--ac));}
+.chkbtn:active{transform:scale(0.82);}
+
+/* MONTH NAV */
+.mnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.mnavlbl{font-size:0.55rem;color:var(--mu);font-family:'Unbounded',sans-serif;letter-spacing:0.08em;text-transform:uppercase;}
+.mnavbtn{width:20px;height:20px;border:none;background:transparent;color:var(--mu);cursor:pointer;font-size:13px;border-radius:4px;display:flex;align-items:center;justify-content:center;}
+.mnavbtn:disabled{opacity:0.2;pointer-events:none;}
+
+/* DAY GRID — compact */
+.dowrow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px;}
+.dowc{text-align:center;font-size:5.5px;color:var(--mu);padding:1px 0;}
+.dgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;}
+.dc{
+  aspect-ratio:1;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:7.5px;
+  color:var(--mu);
+  cursor:pointer;
+  user-select:none;
+  transition:background 0.1s;
+}
+.dc.emp{cursor:default;}
+.dc.fut{opacity:0.2;cursor:default;pointer-events:none;}
+.dc.dn{background:var(--hcol,var(--ac));color:var(--bg);font-weight:700;}
+.dc.tdy{outline:1.5px solid var(--hcol,var(--ac));outline-offset:1px;color:var(--tx);}
+.dc.tdy.dn{outline:none;}
+.dc:not(.emp):not(.fut):not(.dn):active{background:color-mix(in srgb,var(--hcol,var(--ac)) 22%,transparent);}
+
+.hfoot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:7px;border-top:1px solid var(--bd);}
+.hstat{font-size:0.6rem;color:var(--mu);}
+.hstat b{color:var(--tx);}
+.delbtn{padding:4px 10px;border:1px solid rgba(245,84,66,0.3);background:rgba(245,84,66,0.07);border-radius:6px;color:var(--rd);cursor:pointer;font-size:0.6rem;font-family:'Onest',sans-serif;}
+.delbtn:active{background:rgba(245,84,66,0.2);}
+
+.addbtn{width:100%;padding:13px;border:1.5px dashed var(--bd);background:transparent;border-radius:13px;font-family:'Onest',sans-serif;font-size:0.82rem;color:var(--mu);cursor:pointer;margin-bottom:18px;}
+.addbtn:active{border-color:var(--ac);color:var(--ac);}
+
+/* WEIGHT */
+.wcard{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:18px 14px;margin-bottom:12px;}
+.wlbl{font-family:'Unbounded',sans-serif;font-size:0.55rem;letter-spacing:0.15em;color:var(--mu);text-transform:uppercase;margin-bottom:8px;}
+.wbig{font-family:'Unbounded',sans-serif;font-size:2.4rem;font-weight:700;color:var(--a2);line-height:1;margin-bottom:2px;}
+.wbig span{font-size:0.9rem;color:var(--mu);font-weight:300;}
+.wsub{font-size:0.65rem;color:var(--mu);margin-bottom:14px;}
+.wrow{display:flex;gap:8px;}
+.winp{flex:1;padding:12px;background:var(--s2);border:2px solid var(--bd);border-radius:10px;font-family:'Unbounded',sans-serif;font-size:1.2rem;color:var(--tx);text-align:center;outline:none;}
+.winp:focus{border-color:var(--a2);}
+.winp::placeholder{color:var(--mu);font-size:0.8rem;}
+.wsavebtn{flex:1;padding:12px;background:var(--a2);border:none;border-radius:10px;font-family:'Unbounded',sans-serif;font-size:0.6rem;font-weight:700;color:var(--bg);cursor:pointer;}
+.wsavebtn:active{transform:scale(0.96);}
+.ccard{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px;}
+.chead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.ctitle{font-family:'Unbounded',sans-serif;font-size:0.55rem;letter-spacing:0.1em;color:var(--mu);text-transform:uppercase;}
+.pbtns{display:flex;gap:3px;}
+.pbtn{padding:4px 8px;border:1px solid var(--bd);background:transparent;border-radius:5px;font-family:'Unbounded',sans-serif;font-size:0.48rem;color:var(--mu);cursor:pointer;}
+.pbtn.on{border-color:var(--a2);color:var(--a2);background:var(--s2);}
 canvas{width:100%!important;display:block;}
-.weight-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px;}
-.stat-box{background:var(--surface2);border-radius:10px;padding:10px;text-align:center;}
-.stat-val{font-family:'Unbounded',sans-serif;font-size:0.85rem;font-weight:600;color:var(--accent2);margin-bottom:3px;}
-.stat-lbl{font-size:0.6rem;color:var(--muted);}
-.weight-log{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;}
-.log-title{font-family:'Unbounded',sans-serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
-.log-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
-.log-row:last-child{border-bottom:none;}
-.log-date{font-size:0.75rem;color:var(--muted);}
-.log-date.tl{color:var(--accent2);font-weight:500;}
-.log-kg{font-family:'Unbounded',sans-serif;font-size:0.85rem;}
-.log-diff{font-size:0.7rem;font-weight:500;min-width:40px;text-align:right;}
-.log-diff.up{color:var(--red);}.log-diff.dn{color:var(--accent);}
-.analytics-period{display:flex;gap:4px;margin-bottom:16px;}
-.a-btn{flex:1;padding:9px 4px;border:1px solid var(--border);background:transparent;border-radius:9px;font-family:'Unbounded',sans-serif;font-size:0.48rem;color:var(--muted);cursor:pointer;text-transform:uppercase;}
-.a-btn.active{background:var(--surface2);border-color:var(--accent);color:var(--accent);}
-.analytics-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:14px;}
-.analytics-title{font-family:'Unbounded',sans-serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:14px;}
-.habit-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.habit-bar-icon{font-size:14px;flex-shrink:0;}
-.habit-bar-name{font-size:0.7rem;min-width:60px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.habit-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
-.habit-bar-fill{height:100%;border-radius:3px;transition:width 0.5s ease;}
-.habit-bar-pct{font-family:'Unbounded',sans-serif;font-size:0.6rem;color:var(--muted);min-width:32px;text-align:right;}
-.streak-list{display:flex;flex-direction:column;gap:6px;}
-.streak-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:10px;}
-.streak-left{display:flex;align-items:center;gap:8px;}
-.streak-cur{font-family:'Unbounded',sans-serif;font-size:0.9rem;color:var(--accent);}
-.streak-cur span{font-size:0.55rem;color:var(--muted);font-family:'Onest',sans-serif;}
-.streak-total{font-size:0.6rem;color:var(--muted);}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.92);z-index:100;align-items:flex-end;justify-content:center;backdrop-filter:blur(10px);}
-.modal-overlay.open{display:flex;}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:22px 22px 0 0;padding:20px 16px 44px;width:100%;max-width:600px;animation:slideUp 0.3s ease;}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-title{font-family:'Unbounded',sans-serif;font-size:0.95rem;font-weight:600;margin-bottom:18px;}
-.form-group{margin-bottom:12px;}
-.form-label{font-size:0.6rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:7px;display:block;font-family:'Unbounded',sans-serif;}
-.form-input{width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-family:'Onest',sans-serif;font-size:0.9rem;color:var(--text);outline:none;}
-.form-input:focus{border-color:var(--accent);}
-.color-picker{display:flex;gap:7px;flex-wrap:wrap;}
-.color-opt{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all 0.2s;}
-.color-opt.sel{border-color:white;transform:scale(1.2);}
-.emoji-picker{display:flex;gap:5px;flex-wrap:wrap;}
-.emoji-opt{width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
-.emoji-opt.sel{border-color:var(--accent);}
-.modal-actions{display:flex;gap:8px;margin-top:18px;}
-.btn-cancel{flex:1;padding:13px;border:1px solid var(--border);background:transparent;border-radius:10px;font-family:'Onest',sans-serif;font-size:0.82rem;color:var(--muted);cursor:pointer;}
-.btn-confirm{flex:2;padding:13px;border:none;border-radius:10px;font-family:'Unbounded',sans-serif;font-size:0.6rem;font-weight:700;color:var(--bg);cursor:pointer;background:var(--accent);}
-.btn-confirm.red{background:var(--red);color:white;}
-.del-modal{background:var(--surface);border:1px solid var(--border);border-radius:22px 22px 0 0;padding:24px 16px 44px;width:100%;max-width:600px;animation:slideUp 0.3s ease;}
-.del-title{font-family:'Unbounded',sans-serif;font-size:0.9rem;font-weight:600;margin-bottom:8px;}
-.del-sub{font-size:0.8rem;color:var(--muted);margin-bottom:20px;}
-.empty{text-align:center;padding:36px 16px;color:var(--muted);}
-.empty .e{font-size:2.2rem;margin-bottom:10px;}
-.loading{text-align:center;padding:36px;color:var(--muted);font-size:0.75rem;}
+.wstats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px;}
+.sbox{background:var(--s2);border-radius:9px;padding:9px;text-align:center;}
+.sval{font-family:'Unbounded',sans-serif;font-size:0.8rem;font-weight:600;color:var(--a2);margin-bottom:2px;}
+.slbl{font-size:0.55rem;color:var(--mu);}
+.wlog{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:14px;}
+.ltitle{font-family:'Unbounded',sans-serif;font-size:0.55rem;letter-spacing:0.1em;color:var(--mu);text-transform:uppercase;margin-bottom:10px;}
+.lrow{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);}
+.lrow:last-child{border-bottom:none;}
+.ldate{font-size:0.7rem;color:var(--mu);}
+.ldate.tl{color:var(--a2);font-weight:500;}
+.lkg{font-family:'Unbounded',sans-serif;font-size:0.8rem;}
+.ldiff{font-size:0.65rem;font-weight:500;min-width:38px;text-align:right;}
+.ldiff.up{color:var(--rd);}.ldiff.dn{color:var(--ac);}
+
+/* ANALYTICS */
+.aper{display:flex;gap:3px;margin-bottom:14px;}
+.abtn{flex:1;padding:8px 2px;border:1px solid var(--bd);background:transparent;border-radius:8px;font-family:'Unbounded',sans-serif;font-size:0.44rem;color:var(--mu);cursor:pointer;text-transform:uppercase;letter-spacing:0.03em;}
+.abtn.on{background:var(--s2);border-color:var(--ac);color:var(--ac);}
+.acard{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px;}
+.atitle{font-family:'Unbounded',sans-serif;font-size:0.55rem;letter-spacing:0.1em;color:var(--mu);text-transform:uppercase;margin-bottom:12px;}
+.brow{display:flex;align-items:center;gap:7px;margin-bottom:9px;}
+.bico{font-size:13px;flex-shrink:0;}
+.bnam{font-size:0.65rem;min-width:55px;max-width:75px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btrk{flex:1;height:5px;background:var(--bd);border-radius:3px;overflow:hidden;}
+.bfil{height:100%;border-radius:3px;transition:width 0.5s ease;}
+.bpct{font-family:'Unbounded',sans-serif;font-size:0.55rem;color:var(--mu);min-width:28px;text-align:right;}
+.slist{display:flex;flex-direction:column;gap:5px;}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:var(--s2);border-radius:9px;}
+.slft{display:flex;align-items:center;gap:7px;}
+.scur{font-family:'Unbounded',sans-serif;font-size:0.85rem;color:var(--ac);}
+.scur span{font-size:0.5rem;color:var(--mu);font-family:'Onest',sans-serif;}
+.stot{font-size:0.55rem;color:var(--mu);}
+
+/* MODALS */
+.mover{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.92);z-index:100;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);}
+.mover.on{display:flex;}
+.modal{background:var(--s1);border:1px solid var(--bd);border-radius:20px 20px 0 0;padding:18px 14px 44px;width:100%;max-width:600px;animation:su 0.3s ease;}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mtitle{font-family:'Unbounded',sans-serif;font-size:0.88rem;font-weight:600;margin-bottom:16px;}
+.fg{margin-bottom:10px;}
+.flbl{font-size:0.55rem;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;display:block;font-family:'Unbounded',sans-serif;}
+.finp{width:100%;padding:11px;background:var(--s2);border:1px solid var(--bd);border-radius:9px;font-family:'Onest',sans-serif;font-size:0.85rem;color:var(--tx);outline:none;}
+.finp:focus{border-color:var(--ac);}
+.cpick{display:flex;gap:6px;flex-wrap:wrap;}
+.copt{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all 0.2s;}
+.copt.sl{border-color:white;transform:scale(1.2);}
+.epick{display:flex;gap:5px;flex-wrap:wrap;}
+.eopt{width:32px;height:32px;border:1px solid var(--bd);border-radius:7px;background:var(--s2);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;}
+.eopt.sl{border-color:var(--ac);}
+.macts{display:flex;gap:7px;margin-top:16px;}
+.mcnc{flex:1;padding:12px;border:1px solid var(--bd);background:transparent;border-radius:9px;font-family:'Onest',sans-serif;font-size:0.78rem;color:var(--mu);cursor:pointer;}
+.mconf{flex:2;padding:12px;border:none;border-radius:9px;font-family:'Unbounded',sans-serif;font-size:0.55rem;font-weight:700;color:var(--bg);cursor:pointer;background:var(--ac);}
+.mconf.rd{background:var(--rd);color:white;}
+.dmod{background:var(--s1);border:1px solid var(--bd);border-radius:20px 20px 0 0;padding:22px 14px 44px;width:100%;max-width:600px;animation:su 0.3s ease;}
+.dtitle{font-family:'Unbounded',sans-serif;font-size:0.85rem;font-weight:600;margin-bottom:6px;}
+.dsub{font-size:0.75rem;color:var(--mu);margin-bottom:18px;}
+
+.empty{text-align:center;padding:32px 14px;color:var(--mu);}
+.empty .e{font-size:2rem;margin-bottom:8px;}
+.ld{text-align:center;padding:32px;color:var(--mu);font-size:0.7rem;}
 </style>
 </head>
 <body>
-<canvas id="confettiCanvas"></canvas>
-<div class="streak-popup" id="streakPopup">
-  <span class="fire">🔥</span>
-  <div class="days" id="streakDays">3</div>
-  <div class="label">днів поспіль!</div>
-</div>
-<div class="header">
-  <div class="header-tag">Особистий трекер</div>
-  <div class="header-row">
+<canvas id="cc"></canvas>
+<div class="spop" id="spop"><span class="sf">🔥</span><div class="sd" id="sdays">3</div><div class="sl">днів поспіль!</div></div>
+
+<div class="hdr">
+  <div class="htag">Особистий трекер</div>
+  <div class="hrow">
     <h1>Твій <span>прогрес</span></h1>
-    <div class="month-label" id="curMonthLabel"></div>
+    <div class="mlbl" id="mlbl"></div>
   </div>
 </div>
-<div class="sync-bar" id="syncBar">⏳ Підключення...</div>
+<div class="sync" id="syn">⏳ Підключення...</div>
+
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('habits')">🔥 Звички</button>
-  <button class="tab" onclick="switchTab('weight')">⚖️ Вага</button>
-  <button class="tab" onclick="switchTab('analytics')">📊 Аналітика</button>
+  <button class="tab on" onclick="sw('habits')">🔥 Звички</button>
+  <button class="tab" onclick="sw('weight')">⚖️ Вага</button>
+  <button class="tab" onclick="sw('analytics')">📊 Аналітика</button>
 </div>
+
 <div class="main">
-  <div id="tab-habits">
-    <div id="habitsList"><div class="loading">Завантаження...</div></div>
-    <button class="add-habit-btn" onclick="openAddModal()">+ Додати нову звичку</button>
+  <div id="th">
+    <div id="hl"><div class="ld">Завантаження...</div></div>
+    <button class="addbtn" onclick="openAdd()">+ Додати нову звичку</button>
   </div>
-  <div id="tab-weight" style="display:none">
-    <div class="weight-input-card">
-      <div class="weight-input-label">Моя вага сьогодні</div>
-      <div class="today-weight-display" id="todayVal">— <span>кг</span></div>
-      <div class="weight-sub" id="todaySub">Введи вагу нижче і натисни Зберегти</div>
-      <div class="weight-enter-row">
-        <input class="weight-big-input" id="wInput" type="number" step="0.1" min="30" max="300" placeholder="напр. 82.5"/>
-        <button class="btn-save-weight" onclick="saveWeight()">💾 Зберегти</button>
+  <div id="tw" style="display:none">
+    <div class="wcard">
+      <div class="wlbl">Моя вага сьогодні</div>
+      <div class="wbig" id="wval">— <span>кг</span></div>
+      <div class="wsub" id="wsub">Введи вагу нижче і натисни Зберегти</div>
+      <div class="wrow">
+        <input class="winp" id="wi" type="number" step="0.1" min="30" max="300" placeholder="напр. 82.5"/>
+        <button class="wsavebtn" onclick="saveW()">💾 Зберегти</button>
       </div>
     </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <div class="chart-title">Крива ваги</div>
-        <div class="period-btns">
-          <button class="period-btn active" onclick="setWP(7,this)">7д</button>
-          <button class="period-btn" onclick="setWP(30,this)">30д</button>
-          <button class="period-btn" onclick="setWP(90,this)">3м</button>
-          <button class="period-btn" onclick="setWP(0,this)">Все</button>
+    <div class="ccard">
+      <div class="chead">
+        <div class="ctitle">Крива ваги</div>
+        <div class="pbtns">
+          <button class="pbtn on" onclick="setWP(7,this)">7д</button>
+          <button class="pbtn" onclick="setWP(30,this)">30д</button>
+          <button class="pbtn" onclick="setWP(90,this)">3м</button>
+          <button class="pbtn" onclick="setWP(0,this)">Все</button>
         </div>
       </div>
-      <canvas id="wChart" height="140"></canvas>
-      <div class="weight-stats">
-        <div class="stat-box"><div class="stat-val" id="sMin">—</div><div class="stat-lbl">Мін</div></div>
-        <div class="stat-box"><div class="stat-val" id="sMax">—</div><div class="stat-lbl">Макс</div></div>
-        <div class="stat-box"><div class="stat-val" id="sDiff">—</div><div class="stat-lbl">Зміна</div></div>
+      <canvas id="wc" height="130"></canvas>
+      <div class="wstats">
+        <div class="sbox"><div class="sval" id="smn">—</div><div class="slbl">Мін</div></div>
+        <div class="sbox"><div class="sval" id="smx">—</div><div class="slbl">Макс</div></div>
+        <div class="sbox"><div class="sval" id="sdf">—</div><div class="slbl">Зміна</div></div>
       </div>
     </div>
-    <div class="weight-log">
-      <div class="log-title">Історія</div>
-      <div id="wLog"><div class="loading">...</div></div>
-    </div>
+    <div class="wlog"><div class="ltitle">Історія</div><div id="wl"><div class="ld">...</div></div></div>
   </div>
-  <div id="tab-analytics" style="display:none">
-    <div class="analytics-period">
-      <button class="a-btn active" onclick="setAP(7,this)">7 днів</button>
-      <button class="a-btn" onclick="setAP(14,this)">2 тижні</button>
-      <button class="a-btn" onclick="setAP(30,this)">Місяць</button>
-      <button class="a-btn" onclick="setAP(90,this)">3 місяці</button>
+  <div id="ta" style="display:none">
+    <div class="aper">
+      <button class="abtn on" onclick="setAP(7,this)">7 днів</button>
+      <button class="abtn" onclick="setAP(14,this)">2 тижні</button>
+      <button class="abtn" onclick="setAP(30,this)">Місяць</button>
+      <button class="abtn" onclick="setAP(90,this)">3 місяці</button>
     </div>
-    <div class="analytics-card"><div class="analytics-title">Виконання за період</div><div id="aRates"></div></div>
-    <div class="analytics-card"><div class="analytics-title">Поточні стріки 🔥</div><div class="streak-list" id="aStreaks"></div></div>
-    <div class="analytics-card"><div class="analytics-title">Звичок виконано по днях</div><canvas id="aChart" height="140"></canvas></div>
+    <div class="acard"><div class="atitle">Виконання за період</div><div id="ar"></div></div>
+    <div class="acard"><div class="atitle">Стріки 🔥</div><div class="slist" id="as"></div></div>
+    <div class="acard"><div class="atitle">Звичок по днях</div><canvas id="ac" height="130"></canvas></div>
   </div>
 </div>
-<div class="modal-overlay" id="addModal" onclick="bgClose('addModal',event)">
+
+<!-- ADD -->
+<div class="mover" id="madd" onclick="bgc('madd',event)">
   <div class="modal">
-    <div class="modal-title">Нова звичка</div>
-    <div class="form-group"><label class="form-label">Назва</label><input class="form-input" id="hName" placeholder="Наприклад: Спорт, Читання..."/></div>
-    <div class="form-group"><label class="form-label">Іконка</label><div class="emoji-picker" id="emojiPick"></div></div>
-    <div class="form-group"><label class="form-label">Колір</label><div class="color-picker" id="colorPick"></div></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeOverlay('addModal')">Скасувати</button>
-      <button class="btn-confirm" onclick="addHabit()">Додати</button>
+    <div class="mtitle">Нова звичка</div>
+    <div class="fg"><label class="flbl">Назва</label><input class="finp" id="hn" placeholder="Спорт, Читання..."/></div>
+    <div class="fg"><label class="flbl">Іконка</label><div class="epick" id="ep"></div></div>
+    <div class="fg"><label class="flbl">Колір</label><div class="cpick" id="cp"></div></div>
+    <div class="macts">
+      <button class="mcnc" onclick="co('madd')">Скасувати</button>
+      <button class="mconf" onclick="addH()">Додати</button>
     </div>
   </div>
 </div>
-<div class="modal-overlay" id="delModal">
-  <div class="del-modal">
-    <div class="del-title">Видалити звичку?</div>
-    <div class="del-sub">Вся історія буде втрачена назавжди.</div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeOverlay('delModal')">Скасувати</button>
-      <button class="btn-confirm red" onclick="confirmDel()">Видалити</button>
+
+<!-- DELETE -->
+<div class="mover" id="mdel">
+  <div class="dmod">
+    <div class="dtitle">Видалити звичку?</div>
+    <div class="dsub">Вся історія буде втрачена назавжди.</div>
+    <div class="macts">
+      <button class="mcnc" onclick="co('mdel')">Скасувати</button>
+      <button class="mconf rd" onclick="doDel()">Видалити</button>
     </div>
   </div>
 </div>
+
 <script>
-const SB_URL='https://wfejkwjujpxflxvcrrsz.supabase.co';
-const SB_KEY='sb_publishable_bvqcMBDSSXeLHCep4JNvNQ_la-JZcgu';
-const db=supabase.createClient(SB_URL,SB_KEY);
-const COLORS=['#C8F542','#42F5C8','#F542A8','#F5A842','#A842F5','#42A8F5','#F55442','#42F590'];
-const EMOJIS=['🔥','💪','📚','🧘','🏃','🥗','💧','😴','🎯','✍️','🏋️','🚴','🧠','❤️'];
+const SU='https://wfejkwjujpxflxvcrrsz.supabase.co';
+const SK='sb_publishable_bvqcMBDSSXeLHCep4JNvNQ_la-JZcgu';
+const db=supabase.createClient(SU,SK);
+
+const COLS=['#C8F542','#42F5C8','#F542A8','#F5A842','#A842F5','#42A8F5','#F55442','#42F590'];
+const EMJS=['🔥','💪','📚','🧘','🏃','🥗','💧','😴','🎯','✍️','🏋️','🚴','🧠','❤️'];
 const DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
 const MUA=['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
-let habits=[],logs=[],weights=[],pColor=COLORS[0],pEmoji=EMOJIS[0],habitMonth={},pendingDelId=null,wPer=7,aPer=7;
-function todayStr(){return new Date().toISOString().slice(0,10);}
-function ymStr(y,m){return y+'-'+String(m+1).padStart(2,'0');}
-function curYM(){const n=new Date();return ymStr(n.getFullYear(),n.getMonth());}
-function parseYM(ym){const[y,m]=ym.split('-').map(Number);return{y,m:m-1};}
-function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
-function firstDow(y,m){return(new Date(y,m,1).getDay()+6)%7;}
-function setSync(msg,cls){const e=document.getElementById('syncBar');e.textContent=msg;e.className='sync-bar '+(cls||'');}
 
-// CONFETTI
-const cc=document.getElementById('confettiCanvas'),cx=cc.getContext('2d');
-let parts=[],cfRunning=false,cfTimer=null;
-function resizeCC(){cc.width=window.innerWidth;cc.height=window.innerHeight;}
-resizeCC();window.addEventListener('resize',resizeCC);
-function launchConfetti(color){
-  parts=[];if(cfTimer)clearTimeout(cfTimer);
-  const colors=[color,'#C8F542','#42F5C8','#F542A8','#F5A842','#fff'];
+let habits=[],logs=[],weights=[],hm={},pdel=null,pc=COLS[0],pe=EMJS[0],wper=7,aper=7;
+
+const tstr=()=>new Date().toISOString().slice(0,10);
+const ym2=(y,m)=>y+'-'+String(m+1).padStart(2,'0');
+const curYM=()=>{const n=new Date();return ym2(n.getFullYear(),n.getMonth());};
+const pYM=s=>{const[y,m]=s.split('-').map(Number);return{y,m:m-1};};
+const dim=(y,m)=>new Date(y,m+1,0).getDate();
+const fd1=(y,m)=>(new Date(y,m,1).getDay()+6)%7;
+const syn=(m,c)=>{const e=document.getElementById('syn');e.textContent=m;e.className='sync '+(c||'');};
+
+// ─ CONFETTI ─
+const cc=document.getElementById('cc'),cx=cc.getContext('2d');
+let pts=[],cfr=false,cft=null;
+function rsCC(){cc.width=window.innerWidth;cc.height=window.innerHeight;}
+rsCC();window.addEventListener('resize',rsCC);
+function fire(col){
+  pts=[];if(cft)clearTimeout(cft);
+  const cs=[col,'#C8F542','#42F5C8','#F542A8','#F5A842','#fff'];
   const W=cc.width,H=cc.height;
-  for(let i=0;i<140;i++){
-    const a=Math.random()*Math.PI*2,sp=4+Math.random()*9;
-    parts.push({x:W*(0.25+Math.random()*0.5),y:H*0.55,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-7,color:colors[Math.floor(Math.random()*colors.length)],size:4+Math.random()*6,rot:Math.random()*360,rs:(Math.random()-0.5)*12,shape:Math.random()>0.5?'r':'c',alpha:1,decay:0.011+Math.random()*0.009});
+  for(let i=0;i<130;i++){
+    const a=Math.random()*Math.PI*2,sp=5+Math.random()*9;
+    pts.push({x:W*(0.2+Math.random()*0.6),y:H*0.5,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-8,
+      col:cs[~~(Math.random()*cs.length)],sz:3+Math.random()*5,rot:Math.random()*360,
+      rs:(Math.random()-0.5)*11,sh:Math.random()>.5?'r':'c',al:1,dc:.012+Math.random()*.008});
   }
-  if(!cfRunning){cfRunning=true;animateCF();}
-  cfTimer=setTimeout(()=>{cfRunning=false;parts=[];cx.clearRect(0,0,cc.width,cc.height);},2800);
+  if(!cfr){cfr=true;anim();}
+  cft=setTimeout(()=>{cfr=false;pts=[];cx.clearRect(0,0,cc.width,cc.height);},2600);
 }
-function animateCF(){
-  if(!cfRunning)return;
-  cx.clearRect(0,0,cc.width,cc.height);
-  parts=parts.filter(p=>p.alpha>0.04);
-  parts.forEach(p=>{
-    p.x+=p.vx;p.y+=p.vy;p.vy+=0.26;p.vx*=0.99;p.rot+=p.rs;p.alpha-=p.decay;
-    cx.save();cx.globalAlpha=Math.max(0,p.alpha);cx.translate(p.x,p.y);cx.rotate(p.rot*Math.PI/180);cx.fillStyle=p.color;
-    if(p.shape==='r')cx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2);
-    else{cx.beginPath();cx.arc(0,0,p.size/2,0,Math.PI*2);cx.fill();}
-    cx.restore();
-  });
-  if(parts.length>0)requestAnimationFrame(animateCF);
-  else{cfRunning=false;cx.clearRect(0,0,cc.width,cc.height);}
+function anim(){
+  if(!cfr)return;cx.clearRect(0,0,cc.width,cc.height);
+  pts=pts.filter(p=>p.al>.04);
+  pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.vx*=.99;p.rot+=p.rs;p.al-=p.dc;
+    cx.save();cx.globalAlpha=Math.max(0,p.al);cx.translate(p.x,p.y);cx.rotate(p.rot*Math.PI/180);cx.fillStyle=p.col;
+    if(p.sh==='r')cx.fillRect(-p.sz/2,-p.sz/4,p.sz,p.sz/2);
+    else{cx.beginPath();cx.arc(0,0,p.sz/2,0,Math.PI*2);cx.fill();}
+    cx.restore();});
+  if(pts.length)requestAnimationFrame(anim);
+  else{cfr=false;cx.clearRect(0,0,cc.width,cc.height);}
 }
-function showStreakPopup(days,color){
-  const p=document.getElementById('streakPopup');
-  document.getElementById('streakDays').textContent=days;
-  p.style.borderColor=color;
-  document.querySelector('.streak-popup .days').style.color=color;
-  p.classList.add('show');
-  setTimeout(()=>p.classList.remove('show'),2200);
+function showPop(n,col){
+  const p=document.getElementById('spop');
+  document.getElementById('sdays').textContent=n;
+  p.style.borderColor=col;
+  document.querySelector('.sd').style.color=col;
+  p.classList.add('on');
+  setTimeout(()=>p.classList.remove('on'),2200);
 }
 
+// ─ LOAD ─
 async function load(){
   try{
     const[h,l,w]=await Promise.all([
@@ -289,95 +328,100 @@ async function load(){
     ]);
     if(h.error)throw h.error;
     habits=h.data||[];logs=l.data||[];weights=w.data||[];
-    habits.forEach(h=>{if(!habitMonth[h.id])habitMonth[h.id]=curYM();});
-    renderHabits();renderWeight();
-    setSync('🟢 Збережено','ok');
-  }catch(e){setSync('🔴 '+e.message,'err');}
+    habits.forEach(h=>{if(!hm[h.id])hm[h.id]=curYM();});
+    rH();rW();syn('🟢 Збережено','ok');
+  }catch(e){syn('🔴 '+e.message,'er');}
 }
 
-function switchTab(t){
-  ['habits','weight','analytics'].forEach(id=>{document.getElementById('tab-'+id).style.display=id===t?'block':'none';});
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['habits','weight','analytics'][i]===t));
-  if(t==='weight')setTimeout(drawWChart,50);
-  if(t==='analytics')setTimeout(renderAnalytics,50);
+// ─ TABS ─
+function sw(t){
+  document.getElementById('th').style.display=t==='habits'?'block':'none';
+  document.getElementById('tw').style.display=t==='weight'?'block':'none';
+  document.getElementById('ta').style.display=t==='analytics'?'block':'none';
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['habits','weight','analytics'][i]===t));
+  if(t==='weight')setTimeout(dWC,50);
+  if(t==='analytics')setTimeout(rA,50);
 }
 
-function streak(hid){
+// ─ STREAK ─
+function strk(hid){
   let s=0;const d=new Date();
-  while(true){const ds=d.toISOString().slice(0,10);if(!logs.find(l=>l.habit_id===hid&&l.date===ds&&l.done))break;s++;d.setDate(d.getDate()-1);}
+  while(true){const ds=d.toISOString().slice(0,10);if(!logs.find(l=>l.habit_id==hid&&l.date===ds&&l.done))break;s++;d.setDate(d.getDate()-1);}
   return s;
 }
 
-function renderHabits(){
-  const{y,m}=parseYM(curYM());
-  document.getElementById('curMonthLabel').textContent=MUA[m]+' '+y;
-  const el=document.getElementById('habitsList');
+// ─ RENDER HABITS ─
+function rH(){
+  const{y,m}=pYM(curYM());
+  document.getElementById('mlbl').textContent=MUA[m]+' '+y;
+  const el=document.getElementById('hl');
   if(!habits.length){el.innerHTML='<div class="empty"><div class="e">🎯</div><p>Додай першу звичку!</p></div>';return;}
-  el.innerHTML=habits.map(h=>buildCard(h)).join('');
+  el.innerHTML=habits.map(h=>card(h)).join('');
 }
 
-function buildCard(h){
-  if(!habitMonth[h.id])habitMonth[h.id]=curYM();
-  const ym=habitMonth[h.id];
-  const{y,m}=parseYM(ym);
-  const t=todayStr();
-  const todayDone=!!logs.find(l=>l.habit_id===h.id&&l.date===t&&l.done);
-  const s=streak(h.id);
-  const total=logs.filter(l=>l.habit_id===h.id&&l.done).length;
-  const dim=daysInMonth(y,m);
-  const fd=firstDow(y,m);
+function card(h){
+  if(!hm[h.id])hm[h.id]=curYM();
+  const ym=hm[h.id];
+  const{y,m}=pYM(ym);
+  const t=tstr();
+  const tdone=!!logs.find(l=>l.habit_id==h.id&&l.date===t&&l.done);
+  const s=strk(h.id);
+  const tot=logs.filter(l=>l.habit_id==h.id&&l.done).length;
+  const days=dim(y,m);
+  const fd=fd1(y,m);
   const isCur=ym===curYM();
   const tDate=new Date(t);
-  const dowHtml=DOW.map(d=>'<div class="dow-cell">'+d+'</div>').join('');
+
+  const dow=DOW.map(d=>'<div class="dowc">'+d+'</div>').join('');
   let cells='';
-  for(let i=0;i<fd;i++)cells+='<div class="day-cell empty"></div>';
-  for(let day=1;day<=dim;day++){
-    const ds=ym+'-'+String(day).padStart(2,'0');
+  for(let i=0;i<fd;i++)cells+='<div class="dc emp"></div>';
+  for(let d=1;d<=days;d++){
+    const ds=ym+'-'+String(d).padStart(2,'0');
     const fut=new Date(ds)>tDate;
     const isT=ds===t;
-    const done=!!logs.find(l=>l.habit_id===h.id&&l.date===ds&&l.done);
-    let cls='day-cell';
-    if(done)cls+=' done';if(isT)cls+=' today-cell';if(fut)cls+=' future';
-    cells+='<div class="'+cls+'" style="--hc:'+h.color+'" onclick="toggleDay(\''+h.id+'\',\''+ds+'\')">'+day+'</div>';
+    const dn=!!logs.find(l=>l.habit_id==h.id&&l.date===ds&&l.done);
+    let cl='dc';
+    if(dn)cl+=' dn';if(isT)cl+=' tdy';if(fut)cl+=' fut';
+    cells+='<div class="'+cl+'" style="--hcol:'+h.color+'" onclick="tog(\''+h.id+'\',\''+ds+'\')">'+d+'</div>';
   }
-  const mc=logs.filter(l=>l.habit_id===h.id&&l.date.startsWith(ym)&&l.done).length;
-  return '<div class="habit-card" style="--hc:'+h.color+';border-left-color:'+h.color+'">'+
-    '<div class="habit-top">'+
-      '<div class="habit-icon" style="--hc:'+h.color+'">'+h.icon+'</div>'+
-      '<div class="habit-info">'+
-        '<div class="habit-name">'+esc(h.name)+'</div>'+
-        '<div class="streak-badge">🔥 <b>'+s+'</b> поспіль · <b>'+total+'</b> всього</div>'+
-      '</div>'+
-      '<button class="check-today'+(todayDone?' done':'')+'" style="--hc:'+h.color+'" onclick="toggleDay(\''+h.id+'\',\''+t+'\')">'+
-        (todayDone?'✓':'')+
+  const mc=logs.filter(l=>l.habit_id==h.id&&l.date.startsWith(ym)&&l.done).length;
+
+  return '<div class="hc" style="--hcol:'+h.color+';border-left-color:'+h.color+'">'+
+    '<div class="htop">'+
+      '<div class="hico" style="--hcol:'+h.color+'">'+h.icon+'</div>'+
+      '<div class="hinf"><div class="hnam">'+esc(h.name)+'</div>'+
+      '<div class="hstr">🔥 <b>'+s+'</b> поспіль · <b>'+tot+'</b> всього</div></div>'+
+      '<button class="chkbtn'+(tdone?' on':'')+'" style="--hcol:'+h.color+'" onclick="tog(\''+h.id+'\',\''+t+'\')">'+
+        (tdone?'✓':'')+
       '</button>'+
     '</div>'+
-    '<div class="month-header">'+
-      '<button class="month-nav-btn" onclick="changeMonth(\''+h.id+'\',-1)">‹</button>'+
-      '<div class="month-nav-label">'+MUA[m]+' '+y+'</div>'+
-      '<button class="month-nav-btn" '+(isCur?'disabled':'')+' onclick="changeMonth(\''+h.id+'\',1)">›</button>'+
+    '<div class="mnav">'+
+      '<button class="mnavbtn" onclick="chM(\''+h.id+'\',-1)">‹</button>'+
+      '<div class="mnavlbl">'+MUA[m]+' '+y+'</div>'+
+      '<button class="mnavbtn" '+(isCur?'disabled':'')+' onclick="chM(\''+h.id+'\',1)">›</button>'+
     '</div>'+
-    '<div class="dow-row">'+dowHtml+'</div>'+
-    '<div class="days-grid">'+cells+'</div>'+
-    '<div class="habit-footer">'+
-      '<div class="habit-stats-sm">За місяць: <b>'+mc+'</b>/'+dim+'</div>'+
-      '<button class="btn-del-habit" onclick="askDel(\''+h.id+'\')">🗑 Видалити</button>'+
+    '<div class="dowrow">'+dow+'</div>'+
+    '<div class="dgrid">'+cells+'</div>'+
+    '<div class="hfoot">'+
+      '<div class="hstat">За місяць: <b>'+mc+'</b>/'+days+'</div>'+
+      '<button class="delbtn" onclick="askDel(\''+h.id+'\')">🗑 Видалити</button>'+
     '</div>'+
   '</div>';
 }
 
-function changeMonth(hid,dir){
-  const ym=habitMonth[hid]||curYM();
-  const{y,m}=parseYM(ym);
+function chM(hid,dir){
+  const ym=hm[hid]||curYM();
+  const{y,m}=pYM(ym);
   const nd=new Date(y,m+dir,1);
-  const nYM=ymStr(nd.getFullYear(),nd.getMonth());
+  const nYM=ym2(nd.getFullYear(),nd.getMonth());
   if(nYM>curYM())return;
-  habitMonth[hid]=nYM;renderHabits();
+  hm[hid]=nYM;rH();
 }
 
-async function toggleDay(hid,date){
-  if(date>todayStr())return;
-  const ex=logs.find(l=>l.habit_id===hid&&l.date===date);
+async function tog(hid,date){
+  if(date>tstr())return;
+  // compare as string since hid from onclick attr is string
+  const ex=logs.find(l=>String(l.habit_id)===String(hid)&&l.date===date);
   let nowDone;
   if(ex){
     nowDone=!ex.done;
@@ -388,163 +432,165 @@ async function toggleDay(hid,date){
     const{data,error}=await db.from('tracker_logs').insert({habit_id:hid,date,done:true}).select().single();
     if(!error&&data)logs.push(data);
   }
-  renderHabits();
-  setSync('🟢 Збережено','ok');
+  rH();syn('🟢 Збережено','ok');
   if(nowDone){
-    const s=streak(hid);
+    const s=strk(hid);
     if(s>=3){
-      const h=habits.find(h=>h.id===hid);
-      launchConfetti(h?h.color:'#C8F542');
-      showStreakPopup(s,h?h.color:'#C8F542');
+      const h=habits.find(h=>String(h.id)===String(hid));
+      const col=h?h.color:'#C8F542';
+      fire(col);showPop(s,col);
     }
   }
 }
 
-function askDel(id){pendingDelId=id;document.getElementById('delModal').classList.add('open');}
-async function confirmDel(){
-  if(!pendingDelId)return;
-  closeOverlay('delModal');
-  await db.from('tracker_logs').delete().eq('habit_id',pendingDelId);
-  await db.from('tracker_habits').delete().eq('id',pendingDelId);
-  habits=habits.filter(h=>h.id!==pendingDelId);
-  logs=logs.filter(l=>l.habit_id!==pendingDelId);
-  delete habitMonth[pendingDelId];pendingDelId=null;
-  renderHabits();
+// ─ DELETE ─
+function askDel(id){pdel=id;document.getElementById('mdel').classList.add('on');}
+async function doDel(){
+  if(!pdel)return;
+  co('mdel');
+  await db.from('tracker_logs').delete().eq('habit_id',pdel);
+  await db.from('tracker_habits').delete().eq('id',pdel);
+  habits=habits.filter(h=>String(h.id)!==String(pdel));
+  logs=logs.filter(l=>String(l.habit_id)!==String(pdel));
+  delete hm[pdel];pdel=null;
+  rH();syn('🟢 Збережено','ok');
 }
 
-function openAddModal(){
-  pColor=COLORS[0];pEmoji=EMOJIS[0];
-  document.getElementById('hName').value='';
-  document.getElementById('emojiPick').innerHTML=EMOJIS.map(e=>'<div class="emoji-opt'+(e===pEmoji?' sel':'')+'" onclick="pe(\''+e+'\',this)">'+e+'</div>').join('');
-  document.getElementById('colorPick').innerHTML=COLORS.map(c=>'<div class="color-opt'+(c===pColor?' sel':'')+'" style="background:'+c+'" onclick="pc(\''+c+'\',this)"></div>').join('');
-  document.getElementById('addModal').classList.add('open');
-  setTimeout(()=>document.getElementById('hName').focus(),300);
+// ─ ADD HABIT ─
+function openAdd(){
+  pc=COLS[0];pe=EMJS[0];
+  document.getElementById('hn').value='';
+  document.getElementById('ep').innerHTML=EMJS.map(e=>'<div class="eopt'+(e===pe?' sl':'')+'" onclick="selE(\''+e+'\',this)">'+e+'</div>').join('');
+  document.getElementById('cp').innerHTML=COLS.map(c=>'<div class="copt'+(c===pc?' sl':'')+'" style="background:'+c+'" onclick="selC(\''+c+'\',this)"></div>').join('');
+  document.getElementById('madd').classList.add('on');
+  setTimeout(()=>document.getElementById('hn').focus(),300);
 }
-function pe(e,el){pEmoji=e;document.querySelectorAll('.emoji-opt').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');}
-function pc(c,el){pColor=c;document.querySelectorAll('.color-opt').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');}
-function closeOverlay(id){document.getElementById(id).classList.remove('open');}
-function bgClose(id,e){if(e.target.id===id)closeOverlay(id);}
+function selE(e,el){pe=e;document.querySelectorAll('.eopt').forEach(x=>x.classList.remove('sl'));el.classList.add('sl');}
+function selC(c,el){pc=c;document.querySelectorAll('.copt').forEach(x=>x.classList.remove('sl'));el.classList.add('sl');}
+function co(id){document.getElementById(id).classList.remove('on');}
+function bgc(id,e){if(e.target.id===id)co(id);}
 
-async function addHabit(){
-  const name=document.getElementById('hName').value.trim();
-  if(!name){document.getElementById('hName').focus();return;}
-  setSync('⏳ Зберігаємо...','');
-  const{data,error}=await db.from('tracker_habits').insert({name,icon:pEmoji,color:pColor}).select().single();
-  if(error){setSync('🔴 '+error.message,'err');return;}
-  habits.push(data);habitMonth[data.id]=curYM();
-  closeOverlay('addModal');renderHabits();
-  setSync('🟢 Збережено','ok');
+async function addH(){
+  const name=document.getElementById('hn').value.trim();
+  if(!name){document.getElementById('hn').focus();return;}
+  syn('⏳ Зберігаємо...','');
+  const{data,error}=await db.from('tracker_habits').insert({name,icon:pe,color:pc}).select().single();
+  if(error){syn('🔴 '+error.message,'er');return;}
+  habits.push(data);hm[data.id]=curYM();
+  co('madd');rH();syn('🟢 Збережено','ok');
 }
 
-async function saveWeight(){
-  const val=parseFloat(document.getElementById('wInput').value);
-  if(!val||val<30||val>300){document.getElementById('wInput').focus();return;}
-  const t=todayStr();
+// ─ WEIGHT ─
+let wper2=7;
+async function saveW(){
+  const val=parseFloat(document.getElementById('wi').value);
+  if(!val||val<30||val>300){document.getElementById('wi').focus();return;}
+  const t=tstr();
   const ex=weights.find(w=>w.date===t);
   if(ex){await db.from('tracker_weight').update({kg:val}).eq('id',ex.id);ex.kg=val;}
   else{const{data}=await db.from('tracker_weight').insert({date:t,kg:val}).select().single();if(data)weights.unshift(data);}
-  document.getElementById('wInput').value='';
-  renderWeight();drawWChart();
-  setSync('🟢 Збережено','ok');
+  document.getElementById('wi').value='';
+  rW();dWC();syn('🟢 Збережено','ok');
 }
-
-function renderWeight(){
-  const t=todayStr();
-  const tw=weights.find(w=>w.date===t);
-  document.getElementById('todayVal').innerHTML=tw?tw.kg+' <span>кг</span>':'— <span>кг</span>';
-  document.getElementById('todaySub').textContent=tw?'Записано сьогодні ✓':'Введи вагу нижче і натисни Зберегти';
-  const logEl=document.getElementById('wLog');
-  if(!weights.length){logEl.innerHTML='<div class="empty" style="padding:16px"><div class="e">📊</div><p>Записуй вагу щодня</p></div>';return;}
-  const sorted=[...weights].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);
-  logEl.innerHTML=sorted.map((w,i)=>{
-    const prev=sorted[i+1];let diff='—',cls='';
-    if(prev){const d=(w.kg-prev.kg).toFixed(1);diff=(d>0?'+':'')+d;cls=d>0?'up':'dn';}
-    return '<div class="log-row"><div class="log-date'+(w.date===t?' tl':'')+'">'+( w.date===t?'Сьогодні':fmtDate(w.date))+'</div><div class="log-kg">'+w.kg+' кг</div><div class="log-diff '+cls+'">'+diff+'</div></div>';
+function rW(){
+  const t=tstr(),tw=weights.find(w=>w.date===t);
+  document.getElementById('wval').innerHTML=tw?tw.kg+' <span>кг</span>':'— <span>кг</span>';
+  document.getElementById('wsub').textContent=tw?'Записано сьогодні ✓':'Введи вагу нижче і натисни Зберегти';
+  const el=document.getElementById('wl');
+  if(!weights.length){el.innerHTML='<div class="empty" style="padding:14px"><div class="e">📊</div><p>Записуй вагу щодня</p></div>';return;}
+  const s=[...weights].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);
+  el.innerHTML=s.map((w,i)=>{
+    const pv=s[i+1];let df='—',cl='';
+    if(pv){const d=(w.kg-pv.kg).toFixed(1);df=(d>0?'+':'')+d;cl=d>0?'up':'dn';}
+    return '<div class="lrow"><div class="ldate'+(w.date===t?' tl':'')+'">'+( w.date===t?'Сьогодні':fd(w.date))+'</div><div class="lkg">'+w.kg+' кг</div><div class="ldiff '+cl+'">'+df+'</div></div>';
   }).join('');
   if(weights.length){
-    const kgs=weights.map(w=>w.kg);
-    const mn=Math.min(...kgs),mx=Math.max(...kgs);
+    const ks=weights.map(w=>w.kg);
+    const mn=Math.min(...ks),mx=Math.max(...ks);
     const s2=[...weights].sort((a,b)=>a.date.localeCompare(b.date));
-    const d=(s2[s2.length-1].kg-s2[0].kg).toFixed(1);
-    document.getElementById('sMin').textContent=mn+' кг';
-    document.getElementById('sMax').textContent=mx+' кг';
-    document.getElementById('sDiff').textContent=(d>0?'+':'')+d+' кг';
+    const dv=(s2[s2.length-1].kg-s2[0].kg).toFixed(1);
+    document.getElementById('smn').textContent=mn+' кг';
+    document.getElementById('smx').textContent=mx+' кг';
+    document.getElementById('sdf').textContent=(dv>0?'+':'')+dv+' кг';
   }
 }
-
-function setWP(p,btn){wPer=p;document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');drawWChart();}
-function drawWChart(){
-  const canvas=document.getElementById('wChart');if(!canvas)return;
-  const ctx=canvas.getContext('2d');
+function setWP(p,btn){wper2=p;document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');dWC();}
+function dWC(){
+  const cv=document.getElementById('wc');if(!cv)return;
+  const ctx=cv.getContext('2d');
   let data=[...weights].sort((a,b)=>a.date.localeCompare(b.date));
-  if(wPer>0){const cut=new Date();cut.setDate(cut.getDate()-wPer);data=data.filter(w=>new Date(w.date)>=cut);}
-  const W=canvas.offsetWidth||320,H=140;canvas.width=W;canvas.height=H;ctx.clearRect(0,0,W,H);
-  if(!data.length){ctx.fillStyle='rgba(255,255,255,0.2)';ctx.font='11px Onest';ctx.textAlign='center';ctx.fillText('Немає даних',W/2,H/2);return;}
-  drawLine(ctx,data.map(d=>({x:d.date,y:d.kg})),W,H,'#42F5C8');
+  if(wper2>0){const cut=new Date();cut.setDate(cut.getDate()-wper2);data=data.filter(w=>new Date(w.date)>=cut);}
+  const W=cv.offsetWidth||320,H=130;cv.width=W;cv.height=H;ctx.clearRect(0,0,W,H);
+  if(!data.length){ctx.fillStyle='rgba(255,255,255,0.2)';ctx.font='10px Onest';ctx.textAlign='center';ctx.fillText('Немає даних',W/2,H/2);return;}
+  dLine(ctx,data.map(d=>({x:d.date,y:d.kg})),W,H,'#42F5C8');
 }
-
-function drawLine(ctx,data,W,H,color){
-  const ys=data.map(d=>d.y);const mn=Math.min(...ys)-0.5,mx=Math.max(...ys)+0.5,rng=mx-mn||1;
-  const pad={t:8,r:8,b:24,l:34};const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
-  const xp=i=>pad.l+(i/Math.max(data.length-1,1))*cw;
-  const yp=v=>pad.t+(1-(v-mn)/rng)*ch;
+function dLine(ctx,data,W,H,col){
+  const ys=data.map(d=>d.y);const mn=Math.min(...ys)-.5,mx=Math.max(...ys)+.5,rng=mx-mn||1;
+  const p={t:6,r:6,b:22,l:32};const cw=W-p.l-p.r,ch=H-p.t-p.b;
+  const xp=i=>p.l+(i/Math.max(data.length-1,1))*cw;
+  const yp=v=>p.t+(1-(v-mn)/rng)*ch;
   for(let i=0;i<=3;i++){
-    const y=pad.t+(i/3)*ch;ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,0.25)';ctx.font='8px Onest';ctx.textAlign='right';
-    ctx.fillText((mx-(i/3)*rng).toFixed(1),pad.l-3,y+3);
+    const y=p.t+(i/3)*ch;ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(W-p.r,y);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.22)';ctx.font='7px Onest';ctx.textAlign='right';
+    ctx.fillText((mx-(i/3)*rng).toFixed(1),p.l-2,y+3);
   }
-  const g=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
-  g.addColorStop(0,color+'40');g.addColorStop(1,color+'00');
+  const g=ctx.createLinearGradient(0,p.t,0,p.t+ch);
+  g.addColorStop(0,col+'40');g.addColorStop(1,col+'00');
   ctx.beginPath();ctx.moveTo(xp(0),yp(data[0].y));
   for(let i=1;i<data.length;i++){const cx2=(xp(i-1)+xp(i))/2;ctx.bezierCurveTo(cx2,yp(data[i-1].y),cx2,yp(data[i].y),xp(i),yp(data[i].y));}
-  ctx.lineTo(xp(data.length-1),H-pad.b);ctx.lineTo(xp(0),H-pad.b);ctx.closePath();ctx.fillStyle=g;ctx.fill();
+  ctx.lineTo(xp(data.length-1),H-p.b);ctx.lineTo(xp(0),H-p.b);ctx.closePath();ctx.fillStyle=g;ctx.fill();
   ctx.beginPath();ctx.moveTo(xp(0),yp(data[0].y));
   for(let i=1;i<data.length;i++){const cx2=(xp(i-1)+xp(i))/2;ctx.bezierCurveTo(cx2,yp(data[i-1].y),cx2,yp(data[i].y),xp(i),yp(data[i].y));}
-  ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();
-  data.forEach((d,i)=>{ctx.beginPath();ctx.arc(xp(i),yp(d.y),2.5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();});
-  ctx.fillStyle='rgba(255,255,255,0.25)';ctx.font='8px Onest';ctx.textAlign='center';
-  const step=Math.ceil(data.length/5);
-  data.forEach((d,i)=>{if(i%step===0||i===data.length-1){const p=d.x.split('-');ctx.fillText(p[2]+'.'+p[1],xp(i),H-7);}});
+  ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+  data.forEach((d,i)=>{ctx.beginPath();ctx.arc(xp(i),yp(d.y),2,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();});
+  ctx.fillStyle='rgba(255,255,255,0.22)';ctx.font='7px Onest';ctx.textAlign='center';
+  const st=Math.ceil(data.length/5);
+  data.forEach((d,i)=>{if(i%st===0||i===data.length-1){const pp=d.x.split('-');ctx.fillText(pp[2]+'.'+pp[1],xp(i),H-6);}});
 }
 
-function getDays(n){const days=[];for(let i=n-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10));}return days;}
-function setAP(p,btn){aPer=p;document.querySelectorAll('.a-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();}
-
-function renderAnalytics(){
-  if(!habits.length){document.getElementById('aRates').innerHTML='<div class="empty"><p>Додай звички спочатку</p></div>';return;}
-  const days=getDays(aPer);
-  document.getElementById('aRates').innerHTML=habits.map(h=>{
-    const done=days.filter(d=>logs.find(l=>l.habit_id===h.id&&l.date===d&&l.done)).length;
+// ─ ANALYTICS ─
+const gdays=n=>{const d=[];for(let i=n-1;i>=0;i--){const dd=new Date();dd.setDate(dd.getDate()-i);d.push(dd.toISOString().slice(0,10));}return d;};
+function setAP(p,btn){aper=p;document.querySelectorAll('.abtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');rA();}
+function rA(){
+  if(!habits.length){document.getElementById('ar').innerHTML='<div class="empty"><p>Додай звички спочатку</p></div>';return;}
+  const days=gdays(aper);
+  document.getElementById('ar').innerHTML=habits.map(h=>{
+    const done=days.filter(d=>logs.find(l=>l.habit_id==h.id&&l.date===d&&l.done)).length;
     const pct=Math.round((done/days.length)*100);
-    return '<div class="habit-bar-row"><div class="habit-bar-icon">'+h.icon+'</div><div class="habit-bar-name">'+esc(h.name)+'</div><div class="habit-bar-track"><div class="habit-bar-fill" style="width:'+pct+'%;background:'+h.color+'"></div></div><div class="habit-bar-pct">'+pct+'%</div></div>';
+    return '<div class="brow"><div class="bico">'+h.icon+'</div><div class="bnam">'+esc(h.name)+'</div>'+
+      '<div class="btrk"><div class="bfil" style="width:'+pct+'%;background:'+h.color+'"></div></div>'+
+      '<div class="bpct">'+pct+'%</div></div>';
   }).join('');
-  const ss=[...habits].map(h=>({...h,s:streak(h.id),total:logs.filter(l=>l.habit_id===h.id&&l.done).length})).sort((a,b)=>b.s-a.s);
-  document.getElementById('aStreaks').innerHTML=ss.map(h=>'<div class="streak-row"><div class="streak-left"><span style="font-size:15px">'+h.icon+'</span><span style="font-size:0.75rem">'+esc(h.name)+'</span></div><div><div class="streak-cur">'+h.s+' <span>поспіль</span></div><div class="streak-total">Всього: '+h.total+'</div></div></div>').join('');
-  const canvas=document.getElementById('aChart');if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  const W=canvas.offsetWidth||320,H=140;canvas.width=W;canvas.height=H;ctx.clearRect(0,0,W,H);
-  const counts=days.map(d=>({x:d,y:habits.filter(h=>logs.find(l=>l.habit_id===h.id&&l.date===d&&l.done)).length}));
+  const ss=[...habits].map(h=>({...h,s:strk(h.id),tot:logs.filter(l=>l.habit_id==h.id&&l.done).length})).sort((a,b)=>b.s-a.s);
+  document.getElementById('as').innerHTML=ss.map(h=>
+    '<div class="srow"><div class="slft"><span style="font-size:14px">'+h.icon+'</span><span style="font-size:0.7rem">'+esc(h.name)+'</span></div>'+
+    '<div><div class="scur">'+h.s+' <span>поспіль</span></div><div class="stot">Всього: '+h.tot+'</div></div></div>'
+  ).join('');
+  const cv=document.getElementById('ac');if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const W=cv.offsetWidth||320,H=130;cv.width=W;cv.height=H;ctx.clearRect(0,0,W,H);
+  const counts=days.map(d=>({x:d,y:habits.filter(h=>logs.find(l=>l.habit_id==h.id&&l.date===d&&l.done)).length}));
   const maxY=Math.max(...counts.map(c=>c.y),1);
-  const pad={t:8,r:8,b:24,l:20};const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
-  const bw=Math.max(3,(cw/days.length)-2);const t=todayStr();
+  const p={t:6,r:6,b:22,l:18};const cw=W-p.l-p.r,ch=H-p.t-p.b;
+  const bw=Math.max(2,(cw/days.length)-2);const t=tstr();
   counts.forEach((c,i)=>{
-    const x=pad.l+(i/days.length)*cw;const bh=(c.y/maxY)*ch,y=pad.t+ch-bh;
-    ctx.fillStyle=c.x===t?'#C8F542':'rgba(200,245,66,0.3)';
+    const x=p.l+(i/days.length)*cw;const bh=(c.y/maxY)*ch,y=p.t+ch-bh;
+    ctx.fillStyle=c.x===t?'#C8F542':'rgba(200,245,66,0.28)';
     ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,bw,bh,2);else ctx.rect(x,y,bw,bh);ctx.fill();
   });
-  ctx.fillStyle='rgba(255,255,255,0.25)';ctx.font='8px Onest';ctx.textAlign='center';
-  const step=Math.ceil(days.length/5);
-  days.forEach((d,i)=>{if(i%step===0||i===days.length-1){const p=d.split('-');ctx.fillText(p[2]+'.'+p[1],pad.l+(i/days.length)*cw+bw/2,H-7);}});
+  ctx.fillStyle='rgba(255,255,255,0.22)';ctx.font='7px Onest';ctx.textAlign='center';
+  const st=Math.ceil(days.length/5);
+  days.forEach((d,i)=>{if(i%st===0||i===days.length-1){const pp=d.split('-');ctx.fillText(pp[2]+'.'+pp[1],p.l+(i/days.length)*cw+bw/2,H-6);}});
 }
 
-function fmtDate(s){return new Date(s).toLocaleDateString('uk-UA',{day:'numeric',month:'short'});}
-function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
+const fd=s=>new Date(s).toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
+const esc=s=>s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):'';
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'){
-    if(document.activeElement&&document.activeElement.id==='wInput')saveWeight();
-    if(document.activeElement&&document.activeElement.id==='hName')addHabit();
+    if(document.activeElement&&document.activeElement.id==='wi')saveW();
+    if(document.activeElement&&document.activeElement.id==='hn')addH();
   }
 });
 
