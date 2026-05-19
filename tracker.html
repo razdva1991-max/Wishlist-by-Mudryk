@@ -11,16 +11,12 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{width:100%;max-width:100%;overflow-x:hidden;}
 body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;padding-bottom:80px;}
-
-/* CONFETTI */
 #cc{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;}
 .spop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:var(--s1);border:2px solid var(--ac);border-radius:20px;padding:24px 28px;text-align:center;z-index:1000;pointer-events:none;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s;opacity:0;white-space:nowrap;}
 .spop.on{transform:translate(-50%,-50%) scale(1);opacity:1;}
 .spop .sf{font-size:2rem;display:block;margin-bottom:4px;}
 .spop .sd{font-family:'Unbounded',sans-serif;font-size:1.8rem;font-weight:700;color:var(--ac);}
 .spop .sl{font-size:0.65rem;color:var(--mu);margin-top:3px;letter-spacing:0.1em;text-transform:uppercase;}
-
-/* HEADER */
 .hdr{padding:48px 16px 12px;}
 .htag{font-family:'Unbounded',sans-serif;font-size:0.5rem;letter-spacing:0.2em;color:var(--ac);text-transform:uppercase;margin-bottom:4px;}
 .hrow{display:flex;align-items:center;justify-content:space-between;}
@@ -29,19 +25,22 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .mlbl{font-family:'Unbounded',sans-serif;font-size:0.55rem;color:var(--mu);letter-spacing:0.06em;text-transform:uppercase;}
 .sync{text-align:center;font-size:0.6rem;padding:3px 16px 8px;color:var(--mu);}
 .sync.ok{color:var(--ac);}.sync.er{color:var(--rd);}
-
-/* TABS */
 .tabs{display:flex;gap:3px;padding:0 16px 14px;}
 .tab{flex:1;padding:8px 2px;border:1px solid var(--bd);background:transparent;border-radius:9px;font-family:'Unbounded',sans-serif;font-size:0.48rem;color:var(--mu);cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.02em;}
 .tab.on{background:var(--ac);border-color:var(--ac);color:var(--bg);}
-
 .main{padding:0 16px;}
 
 /* HABIT CARD */
-.hc{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px;border-left:3px solid var(--hcol,var(--ac));animation:fu 0.3s ease;}
-@keyframes fu{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-
+.hc{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px;border-left:3px solid var(--hcol,var(--ac));position:relative;}
+.hc.dragging{opacity:0.4;border-style:dashed;}
+.hc.drag-over{border-color:var(--ac);border-style:dashed;}
 .htop{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+
+/* DRAG HANDLE */
+.drag-handle{display:flex;flex-direction:column;gap:3px;padding:4px;cursor:grab;flex-shrink:0;opacity:0.4;}
+.drag-handle span{display:block;width:16px;height:2px;background:var(--mu);border-radius:1px;}
+.drag-handle:active{cursor:grabbing;opacity:1;}
+
 .hico{width:30px;height:30px;border-radius:7px;background:color-mix(in srgb,var(--hcol,var(--ac)) 18%,transparent);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
 .hinf{flex:1;min-width:0;}
 .hnam{font-family:'Unbounded',sans-serif;font-size:0.68rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -51,39 +50,23 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .chkbtn.on{background:var(--hcol,var(--ac));}
 .chkbtn:active{transform:scale(0.82);}
 
-/* MONTH NAV */
 .mnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
 .mnavlbl{font-size:0.55rem;color:var(--mu);font-family:'Unbounded',sans-serif;letter-spacing:0.08em;text-transform:uppercase;}
 .mnavbtn{width:20px;height:20px;border:none;background:transparent;color:var(--mu);cursor:pointer;font-size:13px;border-radius:4px;display:flex;align-items:center;justify-content:center;}
 .mnavbtn:disabled{opacity:0.2;pointer-events:none;}
-
-/* DAY GRID — compact */
 .dowrow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px;}
 .dowc{text-align:center;font-size:5.5px;color:var(--mu);padding:1px 0;}
 .dgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;}
-.dc{
-  aspect-ratio:1;
-  border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:7.5px;
-  color:var(--mu);
-  cursor:pointer;
-  user-select:none;
-  transition:background 0.1s;
-}
+.dc{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7.5px;color:var(--mu);cursor:pointer;user-select:none;transition:background 0.1s;}
 .dc.emp{cursor:default;}
 .dc.fut{opacity:0.2;cursor:default;pointer-events:none;}
 .dc.dn{background:var(--hcol,var(--ac));color:var(--bg);font-weight:700;}
 .dc.tdy{outline:1.5px solid var(--hcol,var(--ac));outline-offset:1px;color:var(--tx);}
 .dc.tdy.dn{outline:none;}
-.dc:not(.emp):not(.fut):not(.dn):active{background:color-mix(in srgb,var(--hcol,var(--ac)) 22%,transparent);}
-
 .hfoot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:7px;border-top:1px solid var(--bd);}
 .hstat{font-size:0.6rem;color:var(--mu);}
 .hstat b{color:var(--tx);}
 .delbtn{padding:4px 10px;border:1px solid rgba(245,84,66,0.3);background:rgba(245,84,66,0.07);border-radius:6px;color:var(--rd);cursor:pointer;font-size:0.6rem;font-family:'Onest',sans-serif;}
-.delbtn:active{background:rgba(245,84,66,0.2);}
-
 .addbtn{width:100%;padding:13px;border:1.5px dashed var(--bd);background:transparent;border-radius:13px;font-family:'Onest',sans-serif;font-size:0.82rem;color:var(--mu);cursor:pointer;margin-bottom:18px;}
 .addbtn:active{border-color:var(--ac);color:var(--ac);}
 
@@ -98,7 +81,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .winp:focus{border-color:var(--a2);}
 .winp::placeholder{color:var(--mu);font-size:0.8rem;}
 .wsavebtn{flex:1;padding:12px;background:var(--a2);border:none;border-radius:10px;font-family:'Unbounded',sans-serif;font-size:0.6rem;font-weight:700;color:var(--bg);cursor:pointer;}
-.wsavebtn:active{transform:scale(0.96);}
 .ccard{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px;}
 .chead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .ctitle{font-family:'Unbounded',sans-serif;font-size:0.55rem;letter-spacing:0.1em;color:var(--mu);text-transform:uppercase;}
@@ -139,6 +121,29 @@ canvas{width:100%!important;display:block;}
 .scur span{font-size:0.5rem;color:var(--mu);font-family:'Onest',sans-serif;}
 .stot{font-size:0.55rem;color:var(--mu);}
 
+/* GOALS BLOCK */
+.goal-habit{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--bd);}
+.goal-habit:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.goal-hname{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+.goal-hname span{font-size:0.75rem;font-family:'Unbounded',sans-serif;}
+.goal-row{margin-bottom:8px;}
+.goal-label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.goal-lbl{font-size:0.6rem;color:var(--mu);}
+.goal-progress-txt{font-family:'Unbounded',sans-serif;font-size:0.65rem;}
+.goal-track{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin-bottom:4px;}
+.goal-fill{height:100%;border-radius:3px;transition:width 0.5s ease;}
+.goal-fill.over{background:var(--ac)!important;}
+.goal-sub{font-size:0.55rem;color:var(--mu);}
+
+/* GOAL EDIT */
+.goal-inputs{display:flex;gap:8px;margin-top:8px;}
+.goal-inp-wrap{flex:1;}
+.goal-inp-lbl{font-size:0.55rem;color:var(--mu);display:block;margin-bottom:3px;}
+.goal-inp{width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;font-family:'Unbounded',sans-serif;font-size:0.8rem;color:var(--tx);text-align:center;outline:none;}
+.goal-inp:focus{border-color:var(--ac);}
+.goal-save-btn{margin-top:8px;width:100%;padding:8px;background:var(--ac);border:none;border-radius:7px;font-family:'Unbounded',sans-serif;font-size:0.55rem;font-weight:700;color:var(--bg);cursor:pointer;}
+.goal-edit-toggle{font-size:0.55rem;color:var(--ac);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:'Onest',sans-serif;margin-top:4px;}
+
 /* MODALS */
 .mover{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.92);z-index:100;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);}
 .mover.on{display:flex;}
@@ -162,7 +167,6 @@ canvas{width:100%!important;display:block;}
 .dmod{background:var(--s1);border:1px solid var(--bd);border-radius:20px 20px 0 0;padding:22px 14px 44px;width:100%;max-width:600px;animation:su 0.3s ease;}
 .dtitle{font-family:'Unbounded',sans-serif;font-size:0.85rem;font-weight:600;margin-bottom:6px;}
 .dsub{font-size:0.75rem;color:var(--mu);margin-bottom:18px;}
-
 .empty{text-align:center;padding:32px 14px;color:var(--mu);}
 .empty .e{font-size:2rem;margin-bottom:8px;}
 .ld{text-align:center;padding:32px;color:var(--mu);font-size:0.7rem;}
@@ -174,19 +178,14 @@ canvas{width:100%!important;display:block;}
 
 <div class="hdr">
   <div class="htag">Особистий трекер</div>
-  <div class="hrow">
-    <h1>Твій <span>прогрес</span></h1>
-    <div class="mlbl" id="mlbl"></div>
-  </div>
+  <div class="hrow"><h1>Твій <span>прогрес</span></h1><div class="mlbl" id="mlbl"></div></div>
 </div>
 <div class="sync" id="syn">⏳ Підключення...</div>
-
 <div class="tabs">
   <button class="tab on" onclick="sw('habits')">🔥 Звички</button>
   <button class="tab" onclick="sw('weight')">⚖️ Вага</button>
   <button class="tab" onclick="sw('analytics')">📊 Аналітика</button>
 </div>
-
 <div class="main">
   <div id="th">
     <div id="hl"><div class="ld">Завантаження...</div></div>
@@ -203,8 +202,7 @@ canvas{width:100%!important;display:block;}
       </div>
     </div>
     <div class="ccard">
-      <div class="chead">
-        <div class="ctitle">Крива ваги</div>
+      <div class="chead"><div class="ctitle">Крива ваги</div>
         <div class="pbtns">
           <button class="pbtn on" onclick="setWP(7,this)">7д</button>
           <button class="pbtn" onclick="setWP(30,this)">30д</button>
@@ -229,6 +227,7 @@ canvas{width:100%!important;display:block;}
       <button class="abtn" onclick="setAP(90,this)">3 місяці</button>
     </div>
     <div class="acard"><div class="atitle">Виконання за період</div><div id="ar"></div></div>
+    <div class="acard"><div class="atitle">🎯 Цілі по звичках</div><div id="ag"></div></div>
     <div class="acard"><div class="atitle">Стріки 🔥</div><div class="slist" id="as"></div></div>
     <div class="acard"><div class="atitle">Звичок по днях</div><canvas id="ac" height="130"></canvas></div>
   </div>
@@ -264,13 +263,13 @@ canvas{width:100%!important;display:block;}
 const SU='https://wfejkwjujpxflxvcrrsz.supabase.co';
 const SK='sb_publishable_bvqcMBDSSXeLHCep4JNvNQ_la-JZcgu';
 const db=supabase.createClient(SU,SK);
-
 const COLS=['#C8F542','#42F5C8','#F542A8','#F5A842','#A842F5','#42A8F5','#F55442','#42F590'];
 const EMJS=['🔥','💪','📚','🧘','🏃','🥗','💧','😴','🎯','✍️','🏋️','🚴','🧠','❤️'];
 const DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
 const MUA=['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
 
-let habits=[],logs=[],weights=[],hm={},pdel=null,pc=COLS[0],pe=EMJS[0],wper=7,aper=7;
+let habits=[],logs=[],weights=[],goals=[],hm={},pdel=null,pc=COLS[0],pe=EMJS[0],wper2=7,aper=7;
+let dragSrc=null;
 
 const tstr=()=>new Date().toISOString().slice(0,10);
 const ym2=(y,m)=>y+'-'+String(m+1).padStart(2,'0');
@@ -280,7 +279,7 @@ const dim=(y,m)=>new Date(y,m+1,0).getDate();
 const fd1=(y,m)=>(new Date(y,m,1).getDay()+6)%7;
 const syn=(m,c)=>{const e=document.getElementById('syn');e.textContent=m;e.className='sync '+(c||'');};
 
-// ─ CONFETTI ─
+// CONFETTI
 const cc=document.getElementById('cc'),cx=cc.getContext('2d');
 let pts=[],cfr=false,cft=null;
 function rsCC(){cc.width=window.innerWidth;cc.height=window.innerHeight;}
@@ -318,22 +317,23 @@ function showPop(n,col){
   setTimeout(()=>p.classList.remove('on'),2200);
 }
 
-// ─ LOAD ─
+// LOAD
 async function load(){
   try{
-    const[h,l,w]=await Promise.all([
-      db.from('tracker_habits').select('*').order('created_at'),
+    const[h,l,w,g]=await Promise.all([
+      db.from('tracker_habits').select('*').order('sort_order').order('created_at'),
       db.from('tracker_logs').select('*'),
-      db.from('tracker_weight').select('*').order('date',{ascending:false})
+      db.from('tracker_weight').select('*').order('date',{ascending:false}),
+      db.from('tracker_goals').select('*')
     ]);
     if(h.error)throw h.error;
-    habits=h.data||[];logs=l.data||[];weights=w.data||[];
+    habits=h.data||[];logs=l.data||[];weights=w.data||[];goals=g.data||[];
     habits.forEach(h=>{if(!hm[h.id])hm[h.id]=curYM();});
     rH();rW();syn('🟢 Збережено','ok');
   }catch(e){syn('🔴 '+e.message,'er');}
 }
 
-// ─ TABS ─
+// TABS
 function sw(t){
   document.getElementById('th').style.display=t==='habits'?'block':'none';
   document.getElementById('tw').style.display=t==='weight'?'block':'none';
@@ -343,20 +343,31 @@ function sw(t){
   if(t==='analytics')setTimeout(rA,50);
 }
 
-// ─ STREAK ─
+// STREAK
 function strk(hid){
   let s=0;const d=new Date();
-  while(true){const ds=d.toISOString().slice(0,10);if(!logs.find(l=>l.habit_id==hid&&l.date===ds&&l.done))break;s++;d.setDate(d.getDate()-1);}
+  while(true){const ds=d.toISOString().slice(0,10);if(!logs.find(l=>String(l.habit_id)===String(hid)&&l.date===ds&&l.done))break;s++;d.setDate(d.getDate()-1);}
   return s;
 }
 
-// ─ RENDER HABITS ─
+// RENDER HABITS
 function rH(){
   const{y,m}=pYM(curYM());
   document.getElementById('mlbl').textContent=MUA[m]+' '+y;
   const el=document.getElementById('hl');
   if(!habits.length){el.innerHTML='<div class="empty"><div class="e">🎯</div><p>Додай першу звичку!</p></div>';return;}
   el.innerHTML=habits.map(h=>card(h)).join('');
+  // attach drag events
+  el.querySelectorAll('.hc').forEach(card=>{
+    card.addEventListener('dragstart',onDragStart);
+    card.addEventListener('dragover',onDragOver);
+    card.addEventListener('drop',onDrop);
+    card.addEventListener('dragend',onDragEnd);
+  });
+  // touch drag for mobile
+  el.querySelectorAll('.drag-handle').forEach(handle=>{
+    handle.addEventListener('touchstart',onTouchStart,{passive:true});
+  });
 }
 
 function card(h){
@@ -364,14 +375,13 @@ function card(h){
   const ym=hm[h.id];
   const{y,m}=pYM(ym);
   const t=tstr();
-  const tdone=!!logs.find(l=>l.habit_id==h.id&&l.date===t&&l.done);
+  const tdone=!!logs.find(l=>String(l.habit_id)===String(h.id)&&l.date===t&&l.done);
   const s=strk(h.id);
-  const tot=logs.filter(l=>l.habit_id==h.id&&l.done).length;
+  const tot=logs.filter(l=>String(l.habit_id)===String(h.id)&&l.done).length;
   const days=dim(y,m);
   const fd=fd1(y,m);
   const isCur=ym===curYM();
   const tDate=new Date(t);
-
   const dow=DOW.map(d=>'<div class="dowc">'+d+'</div>').join('');
   let cells='';
   for(let i=0;i<fd;i++)cells+='<div class="dc emp"></div>';
@@ -379,15 +389,14 @@ function card(h){
     const ds=ym+'-'+String(d).padStart(2,'0');
     const fut=new Date(ds)>tDate;
     const isT=ds===t;
-    const dn=!!logs.find(l=>l.habit_id==h.id&&l.date===ds&&l.done);
-    let cl='dc';
-    if(dn)cl+=' dn';if(isT)cl+=' tdy';if(fut)cl+=' fut';
+    const dn=!!logs.find(l=>String(l.habit_id)===String(h.id)&&l.date===ds&&l.done);
+    let cl='dc';if(dn)cl+=' dn';if(isT)cl+=' tdy';if(fut)cl+=' fut';
     cells+='<div class="'+cl+'" style="--hcol:'+h.color+'" onclick="tog(\''+h.id+'\',\''+ds+'\')">'+d+'</div>';
   }
-  const mc=logs.filter(l=>l.habit_id==h.id&&l.date.startsWith(ym)&&l.done).length;
-
-  return '<div class="hc" style="--hcol:'+h.color+';border-left-color:'+h.color+'">'+
+  const mc=logs.filter(l=>String(l.habit_id)===String(h.id)&&l.date.startsWith(ym)&&l.done).length;
+  return '<div class="hc" draggable="true" data-id="'+h.id+'" style="--hcol:'+h.color+';border-left-color:'+h.color+'">'+
     '<div class="htop">'+
+      '<div class="drag-handle" title="Перетягни щоб змінити порядок"><span></span><span></span><span></span></div>'+
       '<div class="hico" style="--hcol:'+h.color+'">'+h.icon+'</div>'+
       '<div class="hinf"><div class="hnam">'+esc(h.name)+'</div>'+
       '<div class="hstr">🔥 <b>'+s+'</b> поспіль · <b>'+tot+'</b> всього</div></div>'+
@@ -409,6 +418,72 @@ function card(h){
   '</div>';
 }
 
+// DRAG & DROP (desktop)
+function onDragStart(e){dragSrc=this;this.classList.add('dragging');}
+function onDragOver(e){e.preventDefault();this.classList.add('drag-over');}
+function onDrop(e){
+  e.preventDefault();
+  this.classList.remove('drag-over');
+  if(dragSrc===this)return;
+  const srcId=dragSrc.dataset.id;
+  const dstId=this.dataset.id;
+  reorder(srcId,dstId);
+}
+function onDragEnd(){
+  document.querySelectorAll('.hc').forEach(c=>{c.classList.remove('dragging','drag-over');});
+  dragSrc=null;
+}
+
+// TOUCH DRAG (mobile)
+let touchItem=null,touchClone=null,touchStartY=0,touchOffY=0;
+function onTouchStart(e){
+  const card=this.closest('.hc');
+  touchItem=card;
+  const r=card.getBoundingClientRect();
+  touchStartY=e.touches[0].clientY;
+  touchOffY=touchStartY-r.top;
+  card.classList.add('dragging');
+  document.addEventListener('touchmove',onTouchMove,{passive:false});
+  document.addEventListener('touchend',onTouchEnd);
+}
+function onTouchMove(e){
+  e.preventDefault();
+  if(!touchItem)return;
+  const y=e.touches[0].clientY;
+  const cards=[...document.querySelectorAll('.hc:not(.dragging)')];
+  let target=null;
+  cards.forEach(c=>{
+    const r=c.getBoundingClientRect();
+    if(y>r.top&&y<r.bottom)target=c;
+    c.classList.remove('drag-over');
+  });
+  if(target)target.classList.add('drag-over');
+}
+function onTouchEnd(e){
+  document.removeEventListener('touchmove',onTouchMove);
+  document.removeEventListener('touchend',onTouchEnd);
+  if(!touchItem)return;
+  const target=document.querySelector('.hc.drag-over');
+  if(target&&target!==touchItem){
+    reorder(touchItem.dataset.id,target.dataset.id);
+  }else{
+    touchItem.classList.remove('dragging');
+    document.querySelectorAll('.hc').forEach(c=>c.classList.remove('drag-over'));
+  }
+  touchItem=null;
+}
+
+async function reorder(srcId,dstId){
+  const si=habits.findIndex(h=>String(h.id)===String(srcId));
+  const di=habits.findIndex(h=>String(h.id)===String(dstId));
+  if(si<0||di<0)return;
+  const moved=habits.splice(si,1)[0];
+  habits.splice(di,0,moved);
+  // save sort_order to DB
+  await Promise.all(habits.map((h,i)=>db.from('tracker_habits').update({sort_order:i}).eq('id',h.id)));
+  rH();
+}
+
 function chM(hid,dir){
   const ym=hm[hid]||curYM();
   const{y,m}=pYM(ym);
@@ -420,18 +495,17 @@ function chM(hid,dir){
 
 async function tog(hid,date){
   if(date>tstr())return;
-  // compare as string since hid from onclick attr is string
   const ex=logs.find(l=>String(l.habit_id)===String(hid)&&l.date===date);
   let nowDone;
   if(ex){
     nowDone=!ex.done;
-    const{error}=await db.from('tracker_logs').update({done:nowDone}).eq('id',ex.id);
-    if(!error)ex.done=nowDone;
+    await db.from('tracker_logs').update({done:nowDone}).eq('id',ex.id);
   }else{
     nowDone=true;
-    const{data,error}=await db.from('tracker_logs').insert({habit_id:hid,date,done:true}).select().single();
-    if(!error&&data)logs.push(data);
+    await db.from('tracker_logs').insert({habit_id:hid,date,done:true});
   }
+  const{data:fresh}=await db.from('tracker_logs').select('*');
+  if(fresh)logs=fresh;
   rH();syn('🟢 Збережено','ok');
   if(nowDone){
     const s=strk(hid);
@@ -443,20 +517,21 @@ async function tog(hid,date){
   }
 }
 
-// ─ DELETE ─
+// DELETE
 function askDel(id){pdel=id;document.getElementById('mdel').classList.add('on');}
 async function doDel(){
   if(!pdel)return;
   co('mdel');
   await db.from('tracker_logs').delete().eq('habit_id',pdel);
+  await db.from('tracker_goals').delete().eq('habit_id',pdel);
   await db.from('tracker_habits').delete().eq('id',pdel);
   habits=habits.filter(h=>String(h.id)!==String(pdel));
   logs=logs.filter(l=>String(l.habit_id)!==String(pdel));
-  delete hm[pdel];pdel=null;
-  rH();syn('🟢 Збережено','ok');
+  goals=goals.filter(g=>String(g.habit_id)!==String(pdel));
+  delete hm[pdel];pdel=null;rH();syn('🟢 Збережено','ok');
 }
 
-// ─ ADD HABIT ─
+// ADD HABIT
 function openAdd(){
   pc=COLS[0];pe=EMJS[0];
   document.getElementById('hn').value='';
@@ -474,14 +549,14 @@ async function addH(){
   const name=document.getElementById('hn').value.trim();
   if(!name){document.getElementById('hn').focus();return;}
   syn('⏳ Зберігаємо...','');
-  const{data,error}=await db.from('tracker_habits').insert({name,icon:pe,color:pc}).select().single();
+  const sort_order=habits.length;
+  const{data,error}=await db.from('tracker_habits').insert({name,icon:pe,color:pc,sort_order}).select().single();
   if(error){syn('🔴 '+error.message,'er');return;}
   habits.push(data);hm[data.id]=curYM();
   co('madd');rH();syn('🟢 Збережено','ok');
 }
 
-// ─ WEIGHT ─
-let wper2=7;
+// WEIGHT
 async function saveW(){
   const val=parseFloat(document.getElementById('wi').value);
   if(!val||val<30||val>300){document.getElementById('wi').focus();return;}
@@ -489,8 +564,7 @@ async function saveW(){
   const ex=weights.find(w=>w.date===t);
   if(ex){await db.from('tracker_weight').update({kg:val}).eq('id',ex.id);ex.kg=val;}
   else{const{data}=await db.from('tracker_weight').insert({date:t,kg:val}).select().single();if(data)weights.unshift(data);}
-  document.getElementById('wi').value='';
-  rW();dWC();syn('🟢 Збережено','ok');
+  document.getElementById('wi').value='';rW();dWC();syn('🟢 Збережено','ok');
 }
 function rW(){
   const t=tstr(),tw=weights.find(w=>w.date===t);
@@ -502,7 +576,7 @@ function rW(){
   el.innerHTML=s.map((w,i)=>{
     const pv=s[i+1];let df='—',cl='';
     if(pv){const d=(w.kg-pv.kg).toFixed(1);df=(d>0?'+':'')+d;cl=d>0?'up':'dn';}
-    return '<div class="lrow"><div class="ldate'+(w.date===t?' tl':'')+'">'+( w.date===t?'Сьогодні':fd(w.date))+'</div><div class="lkg">'+w.kg+' кг</div><div class="ldiff '+cl+'">'+df+'</div></div>';
+    return '<div class="lrow"><div class="ldate'+(w.date===t?' tl':'')+'">'+( w.date===t?'Сьогодні':fd2(w.date))+'</div><div class="lkg">'+w.kg+' кг</div><div class="ldiff '+cl+'">'+df+'</div></div>';
   }).join('');
   if(weights.length){
     const ks=weights.map(w=>w.kg);
@@ -549,42 +623,129 @@ function dLine(ctx,data,W,H,col){
   data.forEach((d,i)=>{if(i%st===0||i===data.length-1){const pp=d.x.split('-');ctx.fillText(pp[2]+'.'+pp[1],xp(i),H-6);}});
 }
 
-// ─ ANALYTICS ─
+// ANALYTICS
 const gdays=n=>{const d=[];for(let i=n-1;i>=0;i--){const dd=new Date();dd.setDate(dd.getDate()-i);d.push(dd.toISOString().slice(0,10));}return d;};
 function setAP(p,btn){aper=p;document.querySelectorAll('.abtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');rA();}
+
 function rA(){
   if(!habits.length){document.getElementById('ar').innerHTML='<div class="empty"><p>Додай звички спочатку</p></div>';return;}
   const days=gdays(aper);
+
+  // Completion rates
   document.getElementById('ar').innerHTML=habits.map(h=>{
-    const done=days.filter(d=>logs.find(l=>l.habit_id==h.id&&l.date===d&&l.done)).length;
+    const done=days.filter(d=>logs.find(l=>String(l.habit_id)===String(h.id)&&l.date===d&&l.done)).length;
     const pct=Math.round((done/days.length)*100);
     return '<div class="brow"><div class="bico">'+h.icon+'</div><div class="bnam">'+esc(h.name)+'</div>'+
       '<div class="btrk"><div class="bfil" style="width:'+pct+'%;background:'+h.color+'"></div></div>'+
       '<div class="bpct">'+pct+'%</div></div>';
   }).join('');
-  const ss=[...habits].map(h=>({...h,s:strk(h.id),tot:logs.filter(l=>l.habit_id==h.id&&l.done).length})).sort((a,b)=>b.s-a.s);
+
+  // GOALS
+  const now=new Date();
+  const curM=ym2(now.getFullYear(),now.getMonth());
+  const daysInCurM=dim(now.getFullYear(),now.getMonth());
+  const dayOfYear=Math.floor((now-new Date(now.getFullYear(),0,0))/(1000*60*60*24));
+  const daysInYear=now.getFullYear()%4===0?366:365;
+
+  document.getElementById('ag').innerHTML=habits.map(h=>{
+    const g=goals.find(g=>String(g.habit_id)===String(h.id));
+    const mg=g&&g.monthly_goal?g.monthly_goal:null;
+    const yg=g&&g.yearly_goal?g.yearly_goal:null;
+
+    const mDone=logs.filter(l=>String(l.habit_id)===String(h.id)&&l.date.startsWith(curM)&&l.done).length;
+    const yDone=logs.filter(l=>String(l.habit_id)===String(h.id)&&l.date.startsWith(now.getFullYear()+'')&&l.done).length;
+
+    let mBar='',yBar='';
+
+    if(mg){
+      const pct=Math.min(Math.round((mDone/mg)*100),100);
+      const over=mDone>=mg;
+      mBar='<div class="goal-row">'+
+        '<div class="goal-label-row">'+
+          '<span class="goal-lbl">Місяць</span>'+
+          '<span class="goal-progress-txt" style="color:'+(over?h.color:'var(--tx)')+'">'+mDone+' / '+mg+' днів'+(over?' ✓':'')+'</span>'+
+        '</div>'+
+        '<div class="goal-track"><div class="goal-fill'+(over?' over':'')+'" style="width:'+pct+'%;background:'+h.color+'"></div></div>'+
+        '<div class="goal-sub">Залишилось днів у місяці: '+(daysInCurM-now.getDate())+'</div>'+
+      '</div>';
+    }
+    if(yg){
+      const pct=Math.min(Math.round((yDone/yg)*100),100);
+      const over=yDone>=yg;
+      yBar='<div class="goal-row">'+
+        '<div class="goal-label-row">'+
+          '<span class="goal-lbl">Рік</span>'+
+          '<span class="goal-progress-txt" style="color:'+(over?h.color:'var(--tx)')+'">'+yDone+' / '+yg+' днів'+(over?' ✓':'')+'</span>'+
+        '</div>'+
+        '<div class="goal-track"><div class="goal-fill'+(over?' over':'')+'" style="width:'+pct+'%;background:'+h.color+'"></div></div>'+
+        '<div class="goal-sub">Пройшло '+dayOfYear+' з '+daysInYear+' днів року</div>'+
+      '</div>';
+    }
+
+    const hasGoal=mg||yg;
+    return '<div class="goal-habit">'+
+      '<div class="goal-hname"><span>'+h.icon+'</span><span>'+esc(h.name)+'</span></div>'+
+      (hasGoal?(mBar+yBar):'<div style="font-size:0.65rem;color:var(--mu)">Ціль не встановлена</div>')+
+      '<div id="gedit_'+h.id+'"></div>'+
+      '<button class="goal-edit-toggle" onclick="toggleGoalEdit(\''+h.id+'\','+( mg||'')+','+(yg||'')+')">✏️ '+(hasGoal?'Змінити ціль':'Встановити ціль')+'</button>'+
+    '</div>';
+  }).join('');
+
+  // Streaks
+  const ss=[...habits].map(h=>({...h,s:strk(h.id),tot:logs.filter(l=>String(l.habit_id)===String(h.id)&&l.done).length})).sort((a,b)=>b.s-a.s);
   document.getElementById('as').innerHTML=ss.map(h=>
     '<div class="srow"><div class="slft"><span style="font-size:14px">'+h.icon+'</span><span style="font-size:0.7rem">'+esc(h.name)+'</span></div>'+
     '<div><div class="scur">'+h.s+' <span>поспіль</span></div><div class="stot">Всього: '+h.tot+'</div></div></div>'
   ).join('');
+
+  // Bar chart
   const cv=document.getElementById('ac');if(!cv)return;
   const ctx=cv.getContext('2d');
   const W=cv.offsetWidth||320,H=130;cv.width=W;cv.height=H;ctx.clearRect(0,0,W,H);
-  const counts=days.map(d=>({x:d,y:habits.filter(h=>logs.find(l=>l.habit_id==h.id&&l.date===d&&l.done)).length}));
+  const counts=days.map(d=>({x:d,y:habits.filter(h=>logs.find(l=>String(l.habit_id)===String(h.id)&&l.date===d&&l.done)).length}));
   const maxY=Math.max(...counts.map(c=>c.y),1);
-  const p={t:6,r:6,b:22,l:18};const cw=W-p.l-p.r,ch=H-p.t-p.b;
+  const p2={t:6,r:6,b:22,l:18};const cw=W-p2.l-p2.r,ch=H-p2.t-p2.b;
   const bw=Math.max(2,(cw/days.length)-2);const t=tstr();
   counts.forEach((c,i)=>{
-    const x=p.l+(i/days.length)*cw;const bh=(c.y/maxY)*ch,y=p.t+ch-bh;
+    const x=p2.l+(i/days.length)*cw;const bh=(c.y/maxY)*ch,y=p2.t+ch-bh;
     ctx.fillStyle=c.x===t?'#C8F542':'rgba(200,245,66,0.28)';
     ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,bw,bh,2);else ctx.rect(x,y,bw,bh);ctx.fill();
   });
   ctx.fillStyle='rgba(255,255,255,0.22)';ctx.font='7px Onest';ctx.textAlign='center';
   const st=Math.ceil(days.length/5);
-  days.forEach((d,i)=>{if(i%st===0||i===days.length-1){const pp=d.split('-');ctx.fillText(pp[2]+'.'+pp[1],p.l+(i/days.length)*cw+bw/2,H-6);}});
+  days.forEach((d,i)=>{if(i%st===0||i===days.length-1){const pp=d.split('-');ctx.fillText(pp[2]+'.'+pp[1],p2.l+(i/days.length)*cw+bw/2,H-6);}});
 }
 
-const fd=s=>new Date(s).toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
+function toggleGoalEdit(hid, curM, curY){
+  const el=document.getElementById('gedit_'+hid);
+  if(el.innerHTML){el.innerHTML='';return;}
+  el.innerHTML=
+    '<div class="goal-inputs">'+
+      '<div class="goal-inp-wrap"><label class="goal-inp-lbl">Ціль на місяць (днів)</label>'+
+        '<input class="goal-inp" id="gm_'+hid+'" type="number" min="1" max="31" value="'+(curM||'')+'" placeholder="напр. 20"/></div>'+
+      '<div class="goal-inp-wrap"><label class="goal-inp-lbl">Ціль на рік (днів)</label>'+
+        '<input class="goal-inp" id="gy_'+hid+'" type="number" min="1" max="365" value="'+(curY||'')+'" placeholder="напр. 200"/></div>'+
+    '</div>'+
+    '<button class="goal-save-btn" onclick="saveGoal(\''+hid+'\')">Зберегти ціль</button>';
+}
+
+async function saveGoal(hid){
+  const mg=parseInt(document.getElementById('gm_'+hid).value)||null;
+  const yg=parseInt(document.getElementById('gy_'+hid).value)||null;
+  syn('⏳ Зберігаємо...','');
+  const ex=goals.find(g=>String(g.habit_id)===String(hid));
+  if(ex){
+    await db.from('tracker_goals').update({monthly_goal:mg,yearly_goal:yg}).eq('id',ex.id);
+    ex.monthly_goal=mg;ex.yearly_goal=yg;
+  }else{
+    const{data}=await db.from('tracker_goals').insert({habit_id:hid,monthly_goal:mg,yearly_goal:yg}).select().single();
+    if(data)goals.push(data);
+  }
+  syn('🟢 Збережено','ok');
+  rA();
+}
+
+const fd2=s=>new Date(s).toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
 const esc=s=>s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):'';
 
 document.addEventListener('keydown',e=>{
