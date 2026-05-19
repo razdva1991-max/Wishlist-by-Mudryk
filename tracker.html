@@ -247,6 +247,32 @@ canvas{width:100%!important;display:block;}
   </div>
 </div>
 
+<!-- GOAL MODAL -->
+<div class="mover" id="mgoal" onclick="bgc('mgoal',event)">
+  <div class="modal">
+    <div class="mtitle" id="gmodal-title">Ціль для звички</div>
+    <input type="hidden" id="gmodal-hid"/>
+    <div class="fg">
+      <label class="flbl">🗓 Ціль на місяць (днів)</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input class="finp" id="gmodal-m" type="number" min="1" max="31" placeholder="напр. 20" style="font-size:1.1rem;text-align:center"/>
+        <span style="font-size:0.7rem;color:var(--mu)">із ~30 днів</span>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="flbl">📆 Ціль на рік (днів)</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input class="finp" id="gmodal-y" type="number" min="1" max="365" placeholder="напр. 200" style="font-size:1.1rem;text-align:center"/>
+        <span style="font-size:0.7rem;color:var(--mu)">із 365 днів</span>
+      </div>
+    </div>
+    <div class="macts">
+      <button class="mcnc" onclick="co('mgoal')">Скасувати</button>
+      <button class="mconf" onclick="saveGoal()">Зберегти</button>
+    </div>
+  </div>
+</div>
+
 <!-- DELETE -->
 <div class="mover" id="mdel">
   <div class="dmod">
@@ -686,8 +712,7 @@ function rA(){
     return '<div class="goal-habit">'+
       '<div class="goal-hname"><span>'+h.icon+'</span><span>'+esc(h.name)+'</span></div>'+
       (hasGoal?(mBar+yBar):'<div style="font-size:0.65rem;color:var(--mu)">Ціль не встановлена</div>')+
-      '<div id="gedit_'+h.id+'"></div>'+
-      '<button class="goal-edit-toggle" onclick="toggleGoalEdit(\''+h.id+'\','+( mg||'')+','+(yg||'')+')">✏️ '+(hasGoal?'Змінити ціль':'Встановити ціль')+'</button>'+
+      '<button class="goal-edit-toggle" onclick="openGoalModal(\'' +h.id+ '\')" >✏️ '+(hasGoal?'Змінити ціль':'Встановити ціль')+'</button>'+
     '</div>';
   }).join('');
 
@@ -716,22 +741,21 @@ function rA(){
   days.forEach((d,i)=>{if(i%st===0||i===days.length-1){const pp=d.split('-');ctx.fillText(pp[2]+'.'+pp[1],p2.l+(i/days.length)*cw+bw/2,H-6);}});
 }
 
-function toggleGoalEdit(hid, curM, curY){
-  const el=document.getElementById('gedit_'+hid);
-  if(el.innerHTML){el.innerHTML='';return;}
-  el.innerHTML=
-    '<div class="goal-inputs">'+
-      '<div class="goal-inp-wrap"><label class="goal-inp-lbl">Ціль на місяць (днів)</label>'+
-        '<input class="goal-inp" id="gm_'+hid+'" type="number" min="1" max="31" value="'+(curM||'')+'" placeholder="напр. 20"/></div>'+
-      '<div class="goal-inp-wrap"><label class="goal-inp-lbl">Ціль на рік (днів)</label>'+
-        '<input class="goal-inp" id="gy_'+hid+'" type="number" min="1" max="365" value="'+(curY||'')+'" placeholder="напр. 200"/></div>'+
-    '</div>'+
-    '<button class="goal-save-btn" onclick="saveGoal(\''+hid+'\')">Зберегти ціль</button>';
+function openGoalModal(hid){
+  const g=goals.find(g=>String(g.habit_id)===String(hid));
+  const h=habits.find(h=>String(h.id)===String(hid));
+  document.getElementById('gmodal-hid').value=hid;
+  document.getElementById('gmodal-title').textContent=(h?h.icon+' ':'')+esc(h?h.name:'')+'  — Ціль';
+  document.getElementById('gmodal-m').value=g&&g.monthly_goal?g.monthly_goal:'';
+  document.getElementById('gmodal-y').value=g&&g.yearly_goal?g.yearly_goal:'';
+  document.getElementById('mgoal').classList.add('on');
+  setTimeout(()=>document.getElementById('gmodal-m').focus(),300);
 }
 
-async function saveGoal(hid){
-  const mg=parseInt(document.getElementById('gm_'+hid).value)||null;
-  const yg=parseInt(document.getElementById('gy_'+hid).value)||null;
+async function saveGoal(){
+  const hid=document.getElementById('gmodal-hid').value;
+  const mg=parseInt(document.getElementById('gmodal-m').value)||null;
+  const yg=parseInt(document.getElementById('gmodal-y').value)||null;
   syn('⏳ Зберігаємо...','');
   const ex=goals.find(g=>String(g.habit_id)===String(hid));
   if(ex){
@@ -741,6 +765,7 @@ async function saveGoal(hid){
     const{data}=await db.from('tracker_goals').insert({habit_id:hid,monthly_goal:mg,yearly_goal:yg}).select().single();
     if(data)goals.push(data);
   }
+  co('mgoal');
   syn('🟢 Збережено','ok');
   rA();
 }
