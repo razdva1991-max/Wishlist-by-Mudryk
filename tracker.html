@@ -229,7 +229,8 @@ canvas{width:100%!important;display:block;}
     <div class="acard"><div class="atitle">Виконання за період</div><div id="ar"></div></div>
     <div class="acard"><div class="atitle">🎯 Цілі по звичках</div><div id="ag"></div></div>
     <div class="acard"><div class="atitle">Стріки 🔥</div><div class="slist" id="as"></div></div>
-    <div class="acard"><div class="atitle">Звичок по днях</div><canvas id="ac" height="130"></canvas></div>
+    <div class="acard"><div class="atitle">📋 Тижневий звіт</div><div id="weekly-report"></div></div>
+    <div class="acard"><div class="atitle">🟩 Теплова карта року</div><div id="heatmap-wrap"></div></div>
   </div>
 </div>
 
@@ -723,22 +724,215 @@ function rA(){
     '<div><div class="scur">'+h.s+' <span>поспіль</span></div><div class="stot">Всього: '+h.tot+'</div></div></div>'
   ).join('');
 
-  // Bar chart
-  const cv=document.getElementById('ac');if(!cv)return;
-  const ctx=cv.getContext('2d');
-  const W=cv.offsetWidth||320,H=130;cv.width=W;cv.height=H;ctx.clearRect(0,0,W,H);
-  const counts=days.map(d=>({x:d,y:habits.filter(h=>logs.find(l=>String(l.habit_id)===String(h.id)&&l.date===d&&l.done)).length}));
-  const maxY=Math.max(...counts.map(c=>c.y),1);
-  const p2={t:6,r:6,b:22,l:18};const cw=W-p2.l-p2.r,ch=H-p2.t-p2.b;
-  const bw=Math.max(2,(cw/days.length)-2);const t=tstr();
-  counts.forEach((c,i)=>{
-    const x=p2.l+(i/days.length)*cw;const bh=(c.y/maxY)*ch,y=p2.t+ch-bh;
-    ctx.fillStyle=c.x===t?'#C8F542':'rgba(200,245,66,0.28)';
-    ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,bw,bh,2);else ctx.rect(x,y,bw,bh);ctx.fill();
+  // Weekly report
+  renderWeeklyReport();
+  // Heatmap
+  renderHeatmap();
+}
+
+function getWeekDays(offset){
+  // offset 0 = this week, -1 = last week
+  const days=[];
+  const now=new Date();
+  const dow=(now.getDay()+6)%7; // Mon=0
+  const monday=new Date(now);
+  monday.setDate(now.getDate()-dow+(offset*7));
+  for(let i=0;i<7;i++){
+    const d=new Date(monday);
+    d.setDate(monday.getDate()+i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  return days;
+}
+
+function countDone(days){
+  return days.reduce((acc,d)=>{
+    const c=habits.filter(h=>logs.find(l=>String(l.habit_id)===String(h.id)&&l.date===d&&l.done)).length;
+    return acc+c;
+  },0);
+}
+
+function renderWeeklyReport(){
+  const el=document.getElementById('weekly-report');
+  if(!el||!habits.length){if(el)el.innerHTML='<div style="font-size:0.7rem;color:var(--mu);padding:8px 0">Додай звички щоб бачити звіт</div>';return;}
+
+  const thisWeek=getWeekDays(0);
+  const lastWeek=getWeekDays(-1);
+  const today=tstr();
+
+  // Only count days up to today
+  const twDays=thisWeek.filter(d=>d<=today);
+  const twTotal=countDone(twDays);
+  const lwTotal=countDone(lastWeek);
+  const maxPossibleTW=twDays.length*habits.length||1;
+  const maxPossibleLW=lastWeek.length*habits.length||1;
+  const twPct=Math.round((twTotal/maxPossibleTW)*100);
+  const lwPct=Math.round((lwTotal/maxPossibleLW)*100);
+  const diff=twPct-lwPct;
+
+  // Best habit this week
+  const bestH=habits.map(h=>({
+    ...h,
+    cnt:twDays.filter(d=>logs.find(l=>String(l.habit_id)===String(h.id)&&l.date===d&&l.done)).length
+  })).sort((a,b)=>b.cnt-a.cnt)[0];
+
+  // Worst day this week (most missed)
+  const DOW_UA=['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
+  const dayScores=thisWeek.filter(d=>d<=today).map((d,i)=>({
+    label:DOW_UA[(new Date(d).getDay()+6)%7],
+    cnt:habits.filter(h=>logs.find(l=>String(l.habit_id)===String(h.id)&&l.date===d&&l.done)).length,
+    date:d
+  }));
+  const worstDay=dayScores.length?[...dayScores].sort((a,b)=>a.cnt-b.cnt)[0]:null;
+  const bestDay=dayScores.length?[...dayScores].sort((a,b)=>b.cnt-a.cnt)[0]:null;
+
+  const diffColor=diff>0?'var(--ac)':diff<0?'var(--rd)':'var(--mu)';
+  const diffSign=diff>0?'+':'';
+
+  el.innerHTML=
+    // Header stats
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'+
+      '<div style="background:var(--s2);border-radius:10px;padding:12px;text-align:center">'+
+        '<div style="font-family:Unbounded,sans-serif;font-size:1.4rem;font-weight:700;color:var(--ac)">'+twPct+'%</div>'+
+        '<div style="font-size:0.55rem;color:var(--mu);margin-top:2px">Цей тиждень</div>'+
+        '<div style="font-size:0.6rem;color:var(--mu);margin-top:1px">'+twTotal+' з '+(maxPossibleTW)+' можливих</div>'+
+      '</div>'+
+      '<div style="background:var(--s2);border-radius:10px;padding:12px;text-align:center">'+
+        '<div style="font-family:Unbounded,sans-serif;font-size:1.4rem;font-weight:700;color:'+diffColor+'">'+diffSign+diff+'%</div>'+
+        '<div style="font-size:0.55rem;color:var(--mu);margin-top:2px">vs минулий тиждень</div>'+
+        '<div style="font-size:0.6rem;color:var(--mu);margin-top:1px">'+lwPct+'% минулого</div>'+
+      '</div>'+
+    '</div>'+
+    // Day bars this week
+    '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:14px;align-items:end;height:60px">'+
+      thisWeek.map((d,i)=>{
+        const isFuture=d>today;
+        const cnt=isFuture?0:habits.filter(h=>logs.find(l=>String(l.habit_id)===String(h.id)&&l.date===d&&l.done)).length;
+        const maxH=habits.length||1;
+        const pct=Math.round((cnt/maxH)*100);
+        const isToday=d===today;
+        const bg=isFuture?'var(--bd)':isToday?'var(--ac)':'rgba(200,245,66,0.4)';
+        return '<div style="display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end">'+
+          '<div style="width:100%;border-radius:3px 3px 0 0;background:'+bg+';height:'+Math.max(pct,isFuture?0:4)+'%"></div>'+
+          '<div style="font-size:6px;color:'+(isToday?'var(--ac)':'var(--mu)')+'">'+DOW_UA[i]+'</div>'+
+        '</div>';
+      }).join('')+
+    '</div>'+
+    // Insights
+    '<div style="display:flex;flex-direction:column;gap:6px">'+
+      (bestH&&bestH.cnt>0?'<div style="display:flex;align-items:center;gap:8px;background:var(--s2);border-radius:8px;padding:9px 10px">'+
+        '<span>🏆</span><span style="font-size:0.7rem">Найкраща: <b>'+esc(bestH.name)+'</b> — '+bestH.cnt+'/'+twDays.length+' днів</span></div>':'')+
+      (bestDay&&bestDay.cnt>0?'<div style="display:flex;align-items:center;gap:8px;background:var(--s2);border-radius:8px;padding:9px 10px">'+
+        '<span>⚡</span><span style="font-size:0.7rem">Найкращий день: <b>'+bestDay.label+'</b> — '+bestDay.cnt+'/'+habits.length+' звичок</span></div>':'')+
+      (worstDay&&worstDay.cnt===0&&twDays.length>1?'<div style="display:flex;align-items:center;gap:8px;background:var(--s2);border-radius:8px;padding:9px 10px">'+
+        '<span>💪</span><span style="font-size:0.7rem">Складний день: <b>'+worstDay.label+'</b> — нічого не виконано</span></div>':'')+
+    '</div>';
+}
+
+function renderHeatmap(){
+  const el=document.getElementById('heatmap-wrap');
+  if(!el)return;
+
+  const now=new Date();
+  const year=now.getFullYear();
+  const startOfYear=new Date(year,0,1);
+  const today=tstr();
+
+  // Build 53 weeks x 7 days grid
+  const startDow=(startOfYear.getDay()+6)%7; // Mon=0
+  // go back to Monday of week containing Jan 1
+  const gridStart=new Date(startOfYear);
+  gridStart.setDate(gridStart.getDate()-startDow);
+
+  const weeks=[];
+  let cur=new Date(gridStart);
+  while(cur.getFullYear()<=year){
+    const week=[];
+    for(let d=0;d<7;d++){
+      const ds=cur.toISOString().slice(0,10);
+      week.push(ds);
+      cur.setDate(cur.getDate()+1);
+    }
+    weeks.push(week);
+    if(cur.getFullYear()>year&&cur.getMonth()>0)break;
+  }
+
+  const maxH=habits.length||1;
+
+  // Month labels
+  const months=['Сі','Лю','Бе','Кв','Тр','Чер','Лип','Сер','Ве','Жо','Ли','Гр'];
+  let monthLabels='<div style="display:flex;margin-bottom:3px;padding-left:18px">';
+  let prevM=-1;
+  weeks.forEach((week,wi)=>{
+    const m=new Date(week[0]).getMonth();
+    if(m!==prevM&&new Date(week[0]).getFullYear()===year){
+      monthLabels+='<div style="font-size:6px;color:var(--mu);flex:1;min-width:0">'+months[m]+'</div>';
+      prevM=m;
+    }else{
+      monthLabels+='<div style="flex:1;min-width:0"></div>';
+    }
   });
-  ctx.fillStyle='rgba(255,255,255,0.22)';ctx.font='7px Onest';ctx.textAlign='center';
-  const st=Math.ceil(days.length/5);
-  days.forEach((d,i)=>{if(i%st===0||i===days.length-1){const pp=d.split('-');ctx.fillText(pp[2]+'.'+pp[1],p2.l+(i/days.length)*cw+bw/2,H-6);}});
+  monthLabels+='</div>';
+
+  // DOW labels + grid
+  const dowLabels=['Пн','','Ср','','Пт','','Нд'];
+  let grid='<div style="display:flex;gap:2px">';
+  // dow column
+  grid+='<div style="display:flex;flex-direction:column;gap:1px;margin-right:2px">';
+  dowLabels.forEach(d=>{ grid+='<div style="font-size:5.5px;color:var(--mu);height:9px;line-height:9px">'+d+'</div>'; });
+  grid+='</div>';
+
+  weeks.forEach(week=>{
+    grid+='<div style="display:flex;flex-direction:column;gap:1px">';
+    week.forEach(ds=>{
+      const inYear=ds.startsWith(year+'');
+      const isFuture=ds>today;
+      const cnt=(!inYear||isFuture)?-1:habits.filter(h=>logs.find(l=>String(l.habit_id)===String(h.id)&&l.date===ds&&l.done)).length;
+      const isToday=ds===today;
+      let bg;
+      if(!inYear||cnt===-1)bg='transparent';
+      else if(isToday)bg='var(--ac)';
+      else if(cnt===0)bg='var(--bd)';
+      else if(cnt<maxH*0.34)bg='rgba(200,245,66,0.25)';
+      else if(cnt<maxH*0.67)bg='rgba(200,245,66,0.55)';
+      else bg='rgba(200,245,66,0.9)';
+      const border=isToday?'1px solid var(--ac)':'none';
+      grid+='<div style="width:9px;height:9px;border-radius:2px;background:'+bg+';border:'+border+'" title="'+ds+'"></div>';
+    });
+    grid+='</div>';
+  });
+  grid+='</div>';
+
+  // Legend
+  const legend='<div style="display:flex;align-items:center;gap:4px;margin-top:8px;justify-content:flex-end">'+
+    '<span style="font-size:6px;color:var(--mu)">Менше</span>'+
+    ['var(--bd)','rgba(200,245,66,0.25)','rgba(200,245,66,0.55)','rgba(200,245,66,0.9)'].map(c=>
+      '<div style="width:9px;height:9px;border-radius:2px;background:'+c+'"></div>'
+    ).join('')+
+    '<span style="font-size:6px;color:var(--mu)">Більше</span>'+
+  '</div>';
+
+  // Total stats
+  const yearDone=logs.filter(l=>l.date.startsWith(year+'')&&l.date<=today&&l.done).length;
+  const daysGone=Math.floor((now-startOfYear)/(1000*60*60*24))+1;
+  const avgPerDay=(yearDone/daysGone).toFixed(1);
+
+  const summary='<div style="display:flex;gap:6px;margin-bottom:10px">'+
+    '<div style="flex:1;background:var(--s2);border-radius:8px;padding:8px;text-align:center">'+
+      '<div style="font-family:Unbounded,sans-serif;font-size:0.9rem;color:var(--ac)">'+yearDone+'</div>'+
+      '<div style="font-size:0.5rem;color:var(--mu)">виконань за рік</div>'+
+    '</div>'+
+    '<div style="flex:1;background:var(--s2);border-radius:8px;padding:8px;text-align:center">'+
+      '<div style="font-family:Unbounded,sans-serif;font-size:0.9rem;color:var(--ac)">'+avgPerDay+'</div>'+
+      '<div style="font-size:0.5rem;color:var(--mu)">звичок на день</div>'+
+    '</div>'+
+    '<div style="flex:1;background:var(--s2);border-radius:8px;padding:8px;text-align:center">'+
+      '<div style="font-family:Unbounded,sans-serif;font-size:0.9rem;color:var(--ac)">'+daysGone+'</div>'+
+      '<div style="font-size:0.5rem;color:var(--mu)">днів пройшло</div>'+
+    '</div>'+
+  '</div>';
+
+  el.innerHTML=summary+'<div style="overflow-x:auto">'+monthLabels+grid+legend+'</div>';
 }
 
 function openGoalModal(hid){
